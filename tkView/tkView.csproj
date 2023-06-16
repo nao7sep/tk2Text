@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <ApplicationIcon>Smiling.ico</ApplicationIcon>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+
+        <AssemblyName></AssemblyName>
+        <AssemblyTitle></AssemblyTitle>
+
+        <Company>Yoshinao Inoguchi</Company>
+        <Product></Product>
+        <Description></Description>
+        <Copyright></Copyright>
+
+        <Configuration></Configuration>
+
+        <Version>0.5</Version>
+        <AssemblyVersion></AssemblyVersion>
+        <FileVersion></FileVersion>
+        <InformationalVersion></InformationalVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="Smiling.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\tk2TextShared\tk2TextShared.csproj" />
+    </ItemGroup>
+
+</Project>

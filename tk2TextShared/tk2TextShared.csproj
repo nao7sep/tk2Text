@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <AssemblyName></AssemblyName>
+        <AssemblyTitle></AssemblyTitle>
+
+        <Company>Yoshinao Inoguchi</Company>
+        <Product></Product>
+        <Description></Description>
+        <Copyright></Copyright>
+
+        <Configuration></Configuration>
+
+        <Version>0.5</Version>
+        <AssemblyVersion></AssemblyVersion>
+        <FileVersion></FileVersion>
+        <InformationalVersion></InformationalVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="Nekote">
+            <HintPath>..\..\Nekote2018\Nekote\bin\Release\Nekote.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>

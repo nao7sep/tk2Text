@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32630.192
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tk2Text", "tk2Text\tk2Text.csproj", "{B718D77A-A497-4BD3-AAAB-CC4DF8A656EC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tk2TextShared", "tk2TextShared\tk2TextShared.csproj", "{688C1D8F-1124-4A4A-B2EE-25C9B1EA1229}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tkView", "tkView\tkView.csproj", "{5AEE277F-788D-46FA-B924-DABD6943B483}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B718D77A-A497-4BD3-AAAB-CC4DF8A656EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B718D77A-A497-4BD3-AAAB-CC4DF8A656EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B718D77A-A497-4BD3-AAAB-CC4DF8A656EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B718D77A-A497-4BD3-AAAB-CC4DF8A656EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{688C1D8F-1124-4A4A-B2EE-25C9B1EA1229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{688C1D8F-1124-4A4A-B2EE-25C9B1EA1229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{688C1D8F-1124-4A4A-B2EE-25C9B1EA1229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{688C1D8F-1124-4A4A-B2EE-25C9B1EA1229}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AEE277F-788D-46FA-B924-DABD6943B483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AEE277F-788D-46FA-B924-DABD6943B483}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AEE277F-788D-46FA-B924-DABD6943B483}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AEE277F-788D-46FA-B924-DABD6943B483}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AA74D45B-CAD9-42DB-9DD3-6BCCF6C23FD5}
+	EndGlobalSection
+EndGlobal
