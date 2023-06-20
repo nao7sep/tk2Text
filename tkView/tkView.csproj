@@ -3,7 +3,7 @@
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net6.0-windows</TargetFramework>
-        <ApplicationIcon>Smiling.ico</ApplicationIcon>
+        <ApplicationIcon>Microsoft-Fluentui-Emoji-3d-Beaming-Face-With-Smiling-Eyes-3d.ico</ApplicationIcon>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
 
@@ -17,14 +17,21 @@
 
         <Configuration></Configuration>
 
-        <Version>0.5</Version>
+        <Version>0.6</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="Smiling.ico" />
+      <Compile Remove="Resources\**" />
+      <EmbeddedResource Remove="Resources\**" />
+      <None Remove="Resources\**" />
+      <Page Remove="Resources\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Microsoft-Fluentui-Emoji-3d-Beaming-Face-With-Smiling-Eyes-3d.ico" />
     </ItemGroup>
 
     <ItemGroup>

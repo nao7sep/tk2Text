@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:tkView"
         mc:Ignorable="d"
-        Title="tkView" Width="800" Height="450" WindowState="Maximized" Background="#F0F0F0" FontFamily="Meiryo" FontSize="12" Loaded="mWindow_Loaded" PreviewKeyDown="mWindow_PreviewKeyDown" Closed="mWindow_Closed">
+        Title="tkView" Width="800" Height="450" WindowState="Maximized" Background="#F0F0F0" FontFamily="Meiryo" FontSize="12" Loaded="mWindow_Loaded" PreviewKeyDown="mWindow_PreviewKeyDown" Closing="mWindow_Closing" Closed="mWindow_Closed">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
@@ -16,15 +16,16 @@
         <!-- ListBox の項目が折り返されず、横スクロールも表示されないため、ウィンドウが小さければ途切れるのは仕様
             たくさんのタスクリストにやるべきことが分散するのを避けられるなら UI にこだわりは必要でない -->
 
-        <Label Content="早めに:" Margin="10,10,5,0" VerticalAlignment="Top" Padding="5,0" VerticalContentAlignment="Center" Target="{Binding ElementName=mSoon}" />
-        <ListBox x:Name="mSoon" Margin="10,33,5,10" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewKeyDown="mSoon_PreviewKeyDown" />
-        <Label Grid.Column="1" Content="今すぐ:" Margin="5,10,5,0" VerticalAlignment="Top" Padding="5,0" VerticalContentAlignment="Center" Target="{Binding ElementName=mNow}" />
-        <ListBox x:Name="mNow" Grid.Column="1" Margin="5,33,5,10" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewKeyDown="mNow_PreviewKeyDown" />
-        <Label Grid.Column="2" Content="処理済み:" Margin="5,10,10,0" VerticalAlignment="Top" Padding="5,0" VerticalContentAlignment="Center" Target="{Binding ElementName=mHandled}" />
-        <ListBox x:Name="mHandled" Grid.Column="2" Margin="5,33,10,44" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewKeyDown="mHandled_PreviewKeyDown" />
-        <StackPanel Grid.Column="2" Margin="5,0,10,10" VerticalAlignment="Bottom" Orientation="Horizontal">
-            <Button x:Name="mReload" Content="リロード" Height="24" Padding="5,0" Click="mReload_Click" />
-            <TextBlock x:Name="mLastReloadingLocalTimeString" Text="(mLastReloadingLocalTimeString)" Margin="10,0,0,0" VerticalAlignment="Center" />
+        <Label Content="早めに:" Margin="10,10,5,0" VerticalAlignment="Top" Height="24" Padding="5,0" VerticalContentAlignment="Center" Target="{Binding ElementName=mSoon}" />
+        <ListBox x:Name="mSoon" Margin="10,34,5,10" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewKeyDown="mSoon_PreviewKeyDown" />
+        <Label Grid.Column="1" Content="今すぐ:" Margin="5,10,5,0" VerticalAlignment="Top" Height="24" Padding="5,0" VerticalContentAlignment="Center" Target="{Binding ElementName=mNow}" />
+        <ListBox x:Name="mNow" Grid.Column="1" Margin="5,34,5,10" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewKeyDown="mNow_PreviewKeyDown" />
+        <Label Grid.Column="2" Content="処理済み:" Margin="5,10,10,0" VerticalAlignment="Top" Height="24" Padding="5,0" VerticalContentAlignment="Center" Target="{Binding ElementName=mHandled}" />
+        <ListBox x:Name="mHandled" Grid.Column="2" Margin="5,34,10,39" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewKeyDown="mHandled_PreviewKeyDown" />
+        <StackPanel Grid.Column="2" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Orientation="Horizontal">
+            <TextBlock x:Name="mLastReloadingLocalTimeString" Text="(N/A)" VerticalAlignment="Center" />
+            <Button x:Name="mReload" Content="リロード" Margin="10,0,0,0" Height="24" Padding="5,0" Click="mReload_Click" />
+            <Button x:Name="mClose" Content="終了" Margin="5,0,0,0" Height="24" Padding="5,0" Click="mClose_Click" />
         </StackPanel>
     </Grid>
 </Window>

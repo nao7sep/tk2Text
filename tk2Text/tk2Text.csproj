@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
+        <ApplicationIcon>Microsoft-Fluentui-Emoji-3d-Face-With-Spiral-Eyes-3d.ico</ApplicationIcon>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
@@ -16,20 +17,30 @@
 
         <Configuration></Configuration>
 
-        <Version>0.5</Version>
+        <Version>0.6</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
+      <Compile Remove="Resources\**" />
+      <EmbeddedResource Remove="Resources\**" />
+      <None Remove="Resources\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Microsoft-Fluentui-Emoji-3d-Face-With-Spiral-Eyes-3d.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\tk2TextShared\tk2TextShared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Nekote">
-            <HintPath>..\..\Nekote2018\Nekote\bin\Release\Nekote.dll</HintPath>
-        </Reference>
+      <Reference Include="Nekote2018">
+        <HintPath>..\..\Nekote2018\Nekote2018\bin\Release\Nekote2018.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

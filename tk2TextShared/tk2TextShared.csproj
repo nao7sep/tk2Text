@@ -15,16 +15,16 @@
 
         <Configuration></Configuration>
 
-        <Version>0.5</Version>
+        <Version>0.6</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <Reference Include="Nekote">
-            <HintPath>..\..\Nekote2018\Nekote\bin\Release\Nekote.dll</HintPath>
-        </Reference>
+      <Reference Include="Nekote2018">
+        <HintPath>..\..\Nekote2018\Nekote2018\bin\Release\Nekote2018.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

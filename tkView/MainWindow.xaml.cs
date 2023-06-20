@@ -93,7 +93,10 @@ namespace tkView
 
                         xDirectoryPaths.AddRange (xIncludedDirectoryPaths.SelectMany (x =>
                         {
-                            return Directory.GetDirectories (x, "*.*", SearchOption.AllDirectories).Where (y =>
+                            List <string> xDirectoryPaths = Directory.GetDirectories (x, "*.*", SearchOption.AllDirectories).ToList ();
+                            xDirectoryPaths.Add (x); // ピンポイントでの指定もできるように
+
+                            return xDirectoryPaths.Where (y =>
                             {
                                 return File.Exists (Path.Join (y, "taskKiller.exe")) &&
                                     xExcludedDirectoryPaths.Contains (y, StringComparer.OrdinalIgnoreCase) == false;
@@ -364,8 +367,10 @@ namespace tkView
                 {
                     while (mContinuesReloading)
                     {
+                        DateTime xUtcNow = DateTime.UtcNow;
+
                         if (mPreviousAutoReloadingUtc == null ||
-                            (DateTime.UtcNow - mPreviousAutoReloadingUtc.Value).TotalMilliseconds >= mAutoReloadingIntervalInMilliseconds)
+                            (xUtcNow - mPreviousAutoReloadingUtc.Value).TotalMilliseconds >= mAutoReloadingIntervalInMilliseconds)
                         {
                             if (iShared.IsMainWindowClosed == false)
                             {
@@ -373,8 +378,7 @@ namespace tkView
                                 // 既にリロード中で、このスレッドによるリロードが却下されるなら、
                                 //     結果は同じということで mPreviousAutoReloadingUtc を更新
 
-                                // 二度の参照により値が微妙に異なるのは問題なし
-                                mPreviousAutoReloadingUtc = DateTime.UtcNow;
+                                mPreviousAutoReloadingUtc = xUtcNow;
 
                                 mWindow.Dispatcher.Invoke (() =>
                                 {
@@ -575,6 +579,33 @@ namespace tkView
             {
                 // iReload 側でコリジョンのチェックが防止されるため、呼びっぱなしでいい
                 iReload ();
+            }
+
+            catch (Exception xException)
+            {
+                iShared.HandleException (this, xException);
+            }
+        }
+
+        private void mClose_Click (object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Close ();
+            }
+
+            catch (Exception xException)
+            {
+                iShared.HandleException (this, xException);
+            }
+        }
+
+        private void mWindow_Closing (object sender, CancelEventArgs e)
+        {
+            try
+            {
+                if (MessageBox.Show (this, "プログラムを終了しますか？", string.Empty, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                    e.Cancel = true;
             }
 
             catch (Exception xException)
