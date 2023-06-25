@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:tkView"
         mc:Ignorable="d"
-        Title="tkView" Width="800" Height="450" WindowState="Maximized" Background="#F0F0F0" FontFamily="Meiryo" FontSize="12" Loaded="mWindow_Loaded" PreviewKeyDown="mWindow_PreviewKeyDown" Closing="mWindow_Closing" Closed="mWindow_Closed">
+        Title="tkView" Width="1200" Height="600" Background="#F0F0F0" FontFamily="Meiryo" FontSize="12" Initialized="mWindow_Initialized" Loaded="mWindow_Loaded" PreviewKeyDown="mWindow_PreviewKeyDown" Closing="mWindow_Closing" Closed="mWindow_Closed">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />

@@ -319,11 +319,18 @@ namespace tkView
 
         private int mAutoReloadingIntervalInMilliseconds = 30_000;
 
-        private void mWindow_Loaded (object sender, RoutedEventArgs e)
+        private void mWindow_Initialized (object sender, EventArgs e)
         {
             try
             {
-                iShared.IsMainWindowClosed = false;
+                if (int.TryParse (ConfigurationManager.AppSettings ["InitialWidth"], out int xWidth))
+                    Width = xWidth;
+
+                if (int.TryParse (ConfigurationManager.AppSettings ["InitialHeight"], out int xHeight))
+                    Height = xHeight;
+
+                if ("True".Equals (ConfigurationManager.AppSettings ["IsMaximized"], StringComparison.OrdinalIgnoreCase))
+                    WindowState = WindowState.Maximized;
 
                 string? xFontFamily = ConfigurationManager.AppSettings ["FontFamily"];
 
@@ -363,6 +370,19 @@ namespace tkView
                 mSoon.ItemsSource = mTasksToBeHandledSoon;
                 mNow.ItemsSource = mTasksToBeHandledNow;
                 mHandled.ItemsSource = mHandledTasks;
+            }
+
+            catch (Exception xException)
+            {
+                iShared.HandleException (this, xException);
+            }
+        }
+
+        private void mWindow_Loaded (object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                iShared.IsMainWindowClosed = false;
 
                 mContinuesReloading = true;
 
