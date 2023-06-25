@@ -410,7 +410,6 @@ namespace tkView
                 if (e.Key == Key.F5)
                 {
                     iReload ();
-
                     e.Handled = true;
                 }
             }
@@ -498,10 +497,27 @@ namespace tkView
                     // すぐ Dispose してよいのか分からないが、作法として
                     // 今のところ問題なさそう
 
-                    using (Process.Start (Path.Join (xTask.TaskListDirectoryPath, "taskKiller.exe")))
+                    using (Process.Start (Path.Join (xTask.TaskListDirectoryPath, "taskKiller.exe"), new string [] { "-SelectTask", xTask.Guid.ToString ("D") }))
                     {
                     }
                 }
+            }
+        }
+
+        private void iFocusOnSelectedItemOrList (ListBox control)
+        {
+            if (control.SelectedIndex >= 0)
+                iShared.UpdateListBoxItemSelection (control, control.SelectedIndex, true);
+
+            else control.Focus ();
+        }
+
+        private void iCopySelectedItemsTextToClipboard (ListBox control)
+        {
+            if (control.SelectedItem != null)
+            {
+                TaskInfo xTask = (TaskInfo) control.SelectedItem;
+                Clipboard.SetText (xTask.Contents);
             }
         }
 
@@ -512,14 +528,24 @@ namespace tkView
                 if (e.Key == Key.Space)
                 {
                     iChangeSelectedTasksState (mSoon);
-
                     e.Handled = true;
                 }
 
                 else if (e.Key == Key.Enter)
                 {
                     iOpenSelectedTasksList (mSoon);
+                    e.Handled = true;
+                }
 
+                else if (e.Key == Key.Right)
+                {
+                    iFocusOnSelectedItemOrList (mNow);
+                    e.Handled = true;
+                }
+
+                else if (e.Key == Key.C && Keyboard.Modifiers.HasFlag (ModifierKeys.Control))
+                {
+                    iCopySelectedItemsTextToClipboard (mSoon);
                     e.Handled = true;
                 }
             }
@@ -537,14 +563,30 @@ namespace tkView
                 if (e.Key == Key.Space)
                 {
                     iChangeSelectedTasksState (mNow);
-
                     e.Handled = true;
                 }
 
                 else if (e.Key == Key.Enter)
                 {
                     iOpenSelectedTasksList (mNow);
+                    e.Handled = true;
+                }
 
+                else if (e.Key == Key.Left)
+                {
+                    iFocusOnSelectedItemOrList (mSoon);
+                    e.Handled = true;
+                }
+
+                else if (e.Key == Key.Right)
+                {
+                    iFocusOnSelectedItemOrList (mHandled);
+                    e.Handled = true;
+                }
+
+                else if (e.Key == Key.C && Keyboard.Modifiers.HasFlag (ModifierKeys.Control))
+                {
+                    iCopySelectedItemsTextToClipboard (mNow);
                     e.Handled = true;
                 }
             }
@@ -562,7 +604,18 @@ namespace tkView
                 if (e.Key == Key.Enter)
                 {
                     iOpenSelectedTasksList (mHandled);
+                    e.Handled = true;
+                }
 
+                else if (e.Key == Key.Left)
+                {
+                    iFocusOnSelectedItemOrList (mNow);
+                    e.Handled = true;
+                }
+
+                else if (e.Key == Key.C && Keyboard.Modifiers.HasFlag (ModifierKeys.Control))
+                {
+                    iCopySelectedItemsTextToClipboard (mHandled);
                     e.Handled = true;
                 }
             }
