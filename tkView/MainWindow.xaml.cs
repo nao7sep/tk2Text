@@ -40,7 +40,7 @@ namespace tkView
         // こういうデータは、特定のウィンドウのコードでなく、アプリ全体からアクセスできるところに定義することが多い
         // しかし、tkView は完全に自分しか使わないものなので、うるさくならない範囲内でベタ書きにして手抜き
 
-        private string mParametersFilePath = Path.Join (Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location), "Parameters.txt");
+        private readonly string mParametersFilePath = Path.Join (Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location), "Parameters.txt");
 
         private string []? mTaskKillerDirectoryPaths = null;
 
@@ -120,7 +120,7 @@ namespace tkView
         // .net - Why does WPF support binding to properties of an object, but not fields? - Stack Overflow
         // https://stackoverflow.com/questions/842575/why-does-wpf-support-binding-to-properties-of-an-object-but-not-fields
 
-        private ObservableCollection <TaskInfo>
+        private readonly ObservableCollection <TaskInfo>
             mTasksToBeHandledSoon = new ObservableCollection <TaskInfo> (),
             mTasksToBeHandledNow = new ObservableCollection <TaskInfo> (),
             mHandledTasks = new ObservableCollection <TaskInfo> ();
@@ -129,11 +129,11 @@ namespace tkView
         //     別スレッドが始めたのが終わらないうちにユーザーがボタンを押すことの2パターン
         // リロード中のフラグを用意し、前者では次回を待ち、後者ではボタンが押されなかったものと見なす → lock に変更
 
-        private object mReloadingLocker = new object ();
+        private readonly object mReloadingLocker = new object ();
 
-        private string mLogFilePath = Path.Join (Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location), "tkView.log");
+        private readonly string mLogFilePath = Path.Join (Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location), "tkView.log");
 
-        private void iReload ()
+        private void iReload (bool reloadsParametersToo)
         {
             // lock 系のことをベタ書きするにも作法があるようだ
             // if (Monitor.TryEnter (obj)) 内で try/finally のイメージだったが、
@@ -156,6 +156,9 @@ namespace tkView
                     return;
 
                 Stopwatch xStopwatch = Stopwatch.StartNew ();
+
+                if (reloadsParametersToo)
+                    mTaskKillerDirectoryPaths = null;
 
                 List <TaskInfo> xAllTasks = new List <TaskInfo> ();
 
@@ -382,7 +385,9 @@ namespace tkView
 
                                 mWindow.Dispatcher.Invoke (() =>
                                 {
-                                    iReload ();
+                                    // 自動リロード時には、タスクリストのリストまでは更新しない
+                                    // エラーメッセージの出る処理だから
+                                    iReload (reloadsParametersToo: false);
                                 });
                             }
                         }
@@ -409,7 +414,7 @@ namespace tkView
 
                 if (e.Key == Key.F5)
                 {
-                    iReload ();
+                    iReload (reloadsParametersToo: true);
                     e.Handled = true;
                 }
             }
@@ -486,7 +491,7 @@ namespace tkView
             }
         }
 
-        private void iOpenSelectedTasksList (ListBox control)
+        private static void iOpenSelectedTasksList (ListBox control)
         {
             if (control.SelectedItem != null)
             {
@@ -504,7 +509,7 @@ namespace tkView
             }
         }
 
-        private void iFocusOnSelectedItemOrList (ListBox control)
+        private static void iFocusOnSelectedItemOrList (ListBox control)
         {
             if (control.SelectedIndex >= 0)
                 iShared.UpdateListBoxItemSelection (control, control.SelectedIndex, true);
@@ -512,7 +517,7 @@ namespace tkView
             else control.Focus ();
         }
 
-        private void iCopySelectedItemsTextToClipboard (ListBox control)
+        private static void iCopySelectedItemsTextToClipboard (ListBox control)
         {
             if (control.SelectedItem != null)
             {
@@ -631,7 +636,7 @@ namespace tkView
             try
             {
                 // iReload 側でコリジョンのチェックが防止されるため、呼びっぱなしでいい
-                iReload ();
+                iReload (reloadsParametersToo: true);
             }
 
             catch (Exception xException)

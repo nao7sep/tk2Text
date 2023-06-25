@@ -26,6 +26,7 @@ Compiled/tk2Text/NAudio.Core.dll
 Compiled/tk2Text/NAudio.Wasapi.dll
 Compiled/tk2Text/NAudio.WinMM.dll
 Compiled/tk2Text/Nekote2018.xml
+Compiled/tk2Text/Parameters.txt
 Compiled/tk2Text/System.Data.SQLite.dll
 Compiled/tk2Text/System.Data.SQLite.xml
 

@@ -6,7 +6,7 @@ namespace tk2Text
 {
     internal class Program
     {
-        static void Main (string [] args)
+        static void Main (/* string [] args */)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace tk2Text
 
                             if (xLine.StartsWith ("/Exclude:", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (Guid.TryParse (xLine.Substring ("/Exclude:".Length), out Guid xResultAlt))
+                                if (Guid.TryParse (xLine.AsSpan ("/Exclude:".Length), out Guid xResultAlt))
                                 {
                                     xExcludedTasksAndNotes.Add (xResultAlt);
                                     continue;
@@ -84,7 +84,7 @@ namespace tk2Text
 
                         var xSortedHandledTasks = Shared.SortTasks (xResult.Where (x => x.State == TaskState.Done || x.State == TaskState.Cancelled));
 
-                        if (xSortedHandledTasks.Count () > 0)
+                        if (xSortedHandledTasks.Any ())
                         {
                             xBuilder.AppendLine ();
 
