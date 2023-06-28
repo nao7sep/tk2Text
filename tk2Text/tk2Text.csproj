@@ -17,7 +17,7 @@
 
         <Configuration></Configuration>
 
-        <Version>0.8</Version>
+        <Version>0.9</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
@@ -31,6 +31,10 @@
 
     <ItemGroup>
       <Content Include="Microsoft-Fluentui-Emoji-3d-Face-With-Spiral-Eyes-3d.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Formats.Asn1" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>

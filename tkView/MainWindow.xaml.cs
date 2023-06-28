@@ -98,8 +98,21 @@ namespace tkView
 
                             return xDirectoryPaths.Where (y =>
                             {
+                                // 全てのタスクが処理済みになり、その taskKiller が閉じられれば、Ordering ディレクトリーが消える
+                                // 処理したてホヤホヤのタスクが入っていることもあるが、処理の高速化のため無視する
+                                // 処理済みタスクは、「こういうことをやってきたから、次はこういうことだ」を考えるためのコンテキスト情報として表示される
+                                // 一連のタスクが全て終わったなら、そのタスクリスト関連ではほかにやることがなく、コンテキスト情報は不要
+
+                                // 追記: なぜか iReload で Ordering ディレクトリーなどを見ていたので修正
+                                // 実行ファイルがあれば、taskKiller のディレクトリーだと判断される
+                                // 除外されておらず、Completed.txt もなければ、処理に入る
+                                // データがなかったり、Ordering がなかったりなら、ロードの対象にならない
+
                                 return File.Exists (Path.Join (y, "taskKiller.exe")) &&
-                                    xExcludedDirectoryPaths.Contains (y, StringComparer.OrdinalIgnoreCase) == false;
+                                    xExcludedDirectoryPaths.Contains (y, StringComparer.OrdinalIgnoreCase) == false &&
+                                    File.Exists (Path.Join (y, "Completed.txt")) == false &&
+                                    Directory.Exists (Path.Join (y, "Tasks")) &&
+                                    Directory.Exists (Path.Join (y, "Ordering"));
                             });
                         }).
                         Distinct (StringComparer.OrdinalIgnoreCase));
@@ -164,17 +177,6 @@ namespace tkView
 
                 foreach (string xDirectoryPath in taskKillerDirectoryPaths)
                 {
-                    string xTasksDirectoryPath = Path.Join (xDirectoryPath, "Tasks");
-
-                    // 全てのタスクが処理済みになり、その taskKiller が閉じられれば、Ordering ディレクトリーが消える
-                    // 処理したてホヤホヤのタスクが入っていることもあるが、処理の高速化のため無視する
-                    // 処理済みタスクは、「こういうことをやってきたから、次はこういうことだ」を考えるためのコンテキスト情報として表示される
-                    // 一連のタスクが全て終わったなら、そのタスクリスト関連ではほかにやることがなく、コンテキスト情報は不要
-
-                    if (Directory.Exists (xTasksDirectoryPath) == false ||
-                            Directory.Exists (Path.Join (xDirectoryPath, "Ordering")) == false)
-                        continue;
-
                     var xSettings = Shared.LoadSettings (xDirectoryPath);
 
                     string xTaskListTitle;
@@ -187,7 +189,7 @@ namespace tkView
                     StateManager xStateManager = new StateManager (xDirectoryPath);
                     OrderManager xOrderManager = new OrderManager (xDirectoryPath);
 
-                    foreach (string xFilePath in Directory.GetFiles (xTasksDirectoryPath, "*.txt", SearchOption.TopDirectoryOnly))
+                    foreach (string xFilePath in Directory.GetFiles (Path.Join (xDirectoryPath, "Tasks"), "*.txt", SearchOption.TopDirectoryOnly))
                     {
                         try
                         {

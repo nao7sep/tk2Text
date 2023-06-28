@@ -5,6 +5,8 @@ Compiled
 tk2Text/bin/Release/net6.0 > Compiled/tk2Text
 tkView/bin/Release/net6.0-windows > Compiled/tkView
 
+// 通常、.pdb ファイルを残すが、このプロジェクトはメインストリームでないため不要
+
 [Delete]
 Compiled/tk2Text/BouncyCastle.Crypto.dll
 Compiled/tk2Text/BouncyCastle.Crypto.xml
@@ -25,10 +27,13 @@ Compiled/tk2Text/MimeKit.xml
 Compiled/tk2Text/NAudio.Core.dll
 Compiled/tk2Text/NAudio.Wasapi.dll
 Compiled/tk2Text/NAudio.WinMM.dll
+Compiled/tk2Text/Nekote2018.pdb
 Compiled/tk2Text/Nekote2018.xml
 Compiled/tk2Text/Parameters.txt
 Compiled/tk2Text/System.Data.SQLite.dll
 Compiled/tk2Text/System.Data.SQLite.xml
+Compiled/tk2Text/tk2Text.pdb
+Compiled/tk2Text/tk2TextShared.pdb
 
 [Delete]
 Compiled/tkView/BouncyCastle.Crypto.dll
@@ -50,11 +55,14 @@ Compiled/tkView/MimeKit.xml
 Compiled/tkView/NAudio.Core.dll
 Compiled/tkView/NAudio.Wasapi.dll
 Compiled/tkView/NAudio.WinMM.dll
+Compiled/tkView/Nekote2018.pdb
 Compiled/tkView/Nekote2018.xml
 Compiled/tkView/Parameters.txt
 Compiled/tkView/System.Data.SQLite.dll
 Compiled/tkView/System.Data.SQLite.xml
+Compiled/tkView/tk2TextShared.pdb
 Compiled/tkView/tkView.log
+Compiled/tkView/tkView.pdb
 
 [Exclude]
 .git
