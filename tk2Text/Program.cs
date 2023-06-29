@@ -14,7 +14,7 @@ namespace tk2Text
                 if (nFile.Exists (xParametersFilePath) == false)
                 {
                     nFile.Create (xParametersFilePath);
-                    Console.WriteLine ("Parameters.txt を設定してください。");
+                    ConsoleAlt.WriteInfoLine ("Parameters.txt を設定してください。");
                     goto End;
                 }
 
@@ -22,7 +22,7 @@ namespace tk2Text
 
                 if (xParagraphs.Length == 0)
                 {
-                    Console.WriteLine ("Parameters.txt を設定してください。");
+                    ConsoleAlt.WriteInfoLine ("Parameters.txt を設定してください。");
                     goto End;
                 }
 
@@ -30,18 +30,26 @@ namespace tk2Text
                 {
                     iParametersStringParser xParser = new iParametersStringParser (xParagraph);
 
-                    if (xParser.ErrorMessages.Count () > 0)
+                    if (xParser.ErrorMessages.Any ())
                     {
-                        Console.WriteLine (string.Join (Environment.NewLine, xParser.ErrorMessages));
+                        ConsoleAlt.WriteErrorLine (string.Join (Environment.NewLine, xParser.ErrorMessages));
                         goto End;
                     }
 
                     iParametersValidator xValidator = new iParametersValidator (xParser);
 
-                    if (xValidator.ErrorMessages.Count () > 0)
+                    if (xValidator.ErrorMessages.Any ())
                     {
-                        Console.WriteLine (string.Join (Environment.NewLine, xValidator.ErrorMessages));
+                        ConsoleAlt.WriteErrorLine (string.Join (Environment.NewLine, xValidator.ErrorMessages));
                         goto End;
+                    }
+
+                    foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists)
+                    {
+                        iHtmlPageGenerator xHtmlPageGenerator = new iHtmlPageGenerator (xParser, xMergedTaskList);
+
+                        if (xHtmlPageGenerator.TryGenerate () == false)
+                            ConsoleAlt.WriteErrorLine (string.Join (Environment.NewLine, xHtmlPageGenerator.ErrorMessages));
                     }
                 }
             }

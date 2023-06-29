@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Nekote;
 
 namespace tk2Text
 {
@@ -10,13 +11,29 @@ namespace tk2Text
     {
         public readonly List <iTaskListDirectoryInfo> Directories = new List <iTaskListDirectoryInfo> ();
 
-        public readonly string DestPath;
+        public readonly string DestDirectoryPath;
+
+        public readonly string DestFileName;
+
+        private string? mDestFilePath;
+
+        public string DestFilePath
+        {
+            get
+            {
+                if (mDestFilePath == null)
+                    mDestFilePath = nPath.Combine (DestDirectoryPath, DestFileName);
+
+                return mDestFilePath;
+            }
+        }
 
         public readonly string Title;
 
-        public iMergedTaskListInfo (string destPath, string title)
+        public iMergedTaskListInfo (string destDirectoryPath, string destFileName, string title)
         {
-            DestPath = destPath;
+            DestDirectoryPath = destDirectoryPath;
+            DestFileName = destFileName;
             Title = title;
         }
 
@@ -56,6 +73,19 @@ namespace tk2Text
                     mAllMemoNotes = AllTasks.Where (x => string.Equals (x.Contents, "メモ")).SelectMany (y => y.Notes);
 
                 return mAllMemoNotes;
+            }
+        }
+
+        private IEnumerable <iAttachedFileInfo>? mAttachedFiles;
+
+        public IEnumerable <iAttachedFileInfo> AttachedFiles
+        {
+            get
+            {
+                if (mAttachedFiles == null)
+                    mAttachedFiles = Directories.SelectMany (x => x.AttachedFiles);
+
+                return mAttachedFiles;
             }
         }
     }

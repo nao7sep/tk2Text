@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,6 +59,80 @@ namespace tk2Text
                 }
 
                 return mAllTasks;
+            }
+        }
+
+        private IEnumerable <iAttachedFileInfo>? mAttachedFiles;
+
+        public IEnumerable <iAttachedFileInfo> AttachedFiles
+        {
+            get
+            {
+                if (mAttachedFiles == null)
+                {
+                    string xFilesDirectoryPath = nPath.Combine (Path, "Files"),
+                        xInfoFilePath = nPath.Combine (Path, "Files", "Info.txt");
+
+                    // いきなり Info.txt を見てもよいが、一応
+
+                    if (nDirectory.Exists (xFilesDirectoryPath) == false || nFile.Exists (xInfoFilePath) == false)
+                        mAttachedFiles = Enumerable.Empty <iAttachedFileInfo> ();
+
+                    else
+                    {
+                        List <iAttachedFileInfo> xFiles = new List <iAttachedFileInfo> ();
+
+                        foreach (string xParagraph in nFile.ReadAllText (xInfoFilePath).nSplitIntoParagraphs ())
+                        {
+                            string [] xLines = xParagraph.nSplitIntoLines ();
+
+                            if (xLines.Length != 4)
+                                continue;
+
+                            if (xLines [0].Length <= 2 || xLines [0][0] != '[' || xLines [0][xLines [0].Length - 1] != ']')
+                                continue;
+
+                            // 今のところ相対パスは必ず Files/ で始まるが、外部ファイルへのリンクを可能にする可能性もあるし、
+                            //     いずれにしてもファイルの存在チェックをするので、Files/ で始まっているかどうかまでは見ない
+
+                            string xRelativePath = xLines [0].Substring (1, xLines [0].Length - 2),
+                                xFullPath = nPath.Combine (Path, xRelativePath);
+
+                            if (nFile.Exists (xFullPath) == false)
+                                continue;
+
+                            if (xLines [1].StartsWith ("Guid:", StringComparison.OrdinalIgnoreCase) == false)
+                                continue;
+
+                            if (Guid.TryParse (xLines [1].AsSpan ("Guid:".Length), out Guid xGuid))
+                            {
+                                if (xLines [2].StartsWith ("AttachedAt:", StringComparison.OrdinalIgnoreCase) == false)
+                                    continue;
+
+                                if (DateTime.TryParseExact (xLines [2].AsSpan ("AttachedAt:".Length), "O",
+                                    CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime xAttachedAtUtc))
+                                {
+                                    if (xLines [3].StartsWith ("ModifiedAt:", StringComparison.OrdinalIgnoreCase) == false)
+                                        continue;
+
+                                    if (DateTime.TryParseExact (xLines [3].AsSpan ("ModifiedAt:".Length), "O",
+                                        CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime xModifiedAtUtc))
+                                    {
+                                        xFiles.Add (new iAttachedFileInfo (xFullPath, xGuid, xAttachedAtUtc, xModifiedAtUtc));
+                                    }
+                                }
+                            }
+
+                            // タスクのファイルと同様、おかしいものは単純にスルーされる
+                            // 今のところ添付ファイルを編集する機能が taskKiller にないため、
+                            //     Info.txt の情報との不整合などの可能性は低い
+                        }
+
+                        mAttachedFiles = xFiles;
+                    }
+                }
+
+                return mAttachedFiles;
             }
         }
     }

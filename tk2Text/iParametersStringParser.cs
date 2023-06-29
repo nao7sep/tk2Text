@@ -126,12 +126,12 @@ namespace tk2Text
 
                     var xValues = xTrimmed.Substring ("Attributes:".Length).Split ('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-                    if (xValues.Length == 3 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [1]))
+                    if (xValues.Length == 4 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [1]))
                     {
 #if DEBUG
-                        Console.WriteLine ($"Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]}");
+                        Console.WriteLine ($"Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]}");
 #endif
-                        xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2]));
+                        xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2], xValues [3]));
                     }
 
                     else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);

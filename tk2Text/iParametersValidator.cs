@@ -45,12 +45,13 @@ namespace tk2Text
                 else return Enumerable.Empty <string> ();
             }).
             Distinct (StringComparer.OrdinalIgnoreCase).
-            Where (y => Parser.ExcludedPaths.Contains (y, StringComparer.OrdinalIgnoreCase) == false);
+            Where (y => Parser.ExcludedPaths.Contains (y, StringComparer.OrdinalIgnoreCase) == false).
+            ToArray (); // 遅延実行によるトラブルを回避
 #if DEBUG
-            if (xAllPaths.Count () > 0)
+            if (xAllPaths.Length > 0)
                 Console.WriteLine (string.Join (Environment.NewLine, xAllPaths.Select (x => $"DirectoryPath: {x}")));
 #endif
-            if (xAllPaths.Count () == 0)
+            if (xAllPaths.Length == 0)
                 xErrorMessages.Add ("処理対象のタスクリストが一つもありません。");
 
             // 「右のパスを左のパスに統合する」のペア情報の集まり
@@ -73,23 +74,21 @@ namespace tk2Text
                 if (y.Count () >= 2)
                     Console.WriteLine ("MergedDirectoryPaths: " + string.Join (" | ", y));
 #endif
-                // 属性情報を順に見ていき、SourcePath が一つ以上のディレクトリーパスのいずれかと一致する最初のエントリーを探す
-                // 見つからなければ、SourcePath など全てが string.Empty の iAttributesInfo.Empty が得られる
-                var xAttributes = Parser.Attributes.FirstOrDefault (z => y.Contains (z.SourcePath, StringComparer.OrdinalIgnoreCase), iAttributesInfo.Empty);
+                // 属性情報を順に見ていき、SourceDirectoryPath が一つ以上のディレクトリーパスのいずれかと一致する最初のエントリーを探す
+                // 見つからなければ、SourceDirectoryPath など全てが string.Empty の iAttributesInfo.Empty が得られる
+                var xAttributes = Parser.Attributes.FirstOrDefault (z => y.Contains (z.SourceDirectoryPath, StringComparer.OrdinalIgnoreCase), iAttributesInfo.Empty);
 
-                if (string.IsNullOrEmpty (xAttributes.SourcePath))
+                if (string.IsNullOrEmpty (xAttributes.SourceDirectoryPath))
                     xErrorMessages.Add ("属性情報がありません: " + string.Join (" | ", y));
 #if DEBUG
-                else Console.WriteLine ($"Attributes: {string.Join (" | ", y)} | {xAttributes.DestPath} | {xAttributes.Title}");
+                else Console.WriteLine ($"Attributes: {string.Join (" | ", y)} | {xAttributes.DestDirectoryPath} | {xAttributes.DestFileName} | {xAttributes.Title}");
 #endif
-                iMergedTaskListInfo xMergedTaskList = new iMergedTaskListInfo (xAttributes.DestPath, xAttributes.Title);
+                iMergedTaskListInfo xMergedTaskList = new iMergedTaskListInfo (xAttributes.DestDirectoryPath, xAttributes.DestFileName, xAttributes.Title);
                 xMergedTaskList.Directories.AddRange (y.Select (z => new iTaskListDirectoryInfo (z)));
                 return xMergedTaskList;
-            });
-#if DEBUG
-            // エラーメッセージがあって処理が打ち切られると、LINQ の処理が行われず、デバッグ用の情報が表示されない
-            MergedTaskLists.ToArray ();
-#endif
+            }).
+            ToArray (); // 遅延実行によるトラブルを回避
+
             ErrorMessages = xErrorMessages;
         }
     }

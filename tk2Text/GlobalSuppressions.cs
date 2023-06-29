@@ -6,7 +6,9 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage ("Style", "IDE0021")]
+[assembly: SuppressMessage ("Style", "IDE0022")]
 [assembly: SuppressMessage ("Style", "IDE0045")]
+[assembly: SuppressMessage ("Style", "IDE0056")]
 [assembly: SuppressMessage ("Style", "IDE0057")]
 [assembly: SuppressMessage ("Style", "IDE0074")]
 [assembly: SuppressMessage ("Style", "IDE0078")]
