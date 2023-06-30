@@ -46,10 +46,7 @@ namespace tk2Text
 
                     foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists)
                     {
-                        iHtmlPageGenerator xHtmlPageGenerator = new iHtmlPageGenerator (xParser, xMergedTaskList);
-
-                        if (xHtmlPageGenerator.TryGenerate () == false)
-                            ConsoleAlt.WriteErrorLine (string.Join (Environment.NewLine, xHtmlPageGenerator.ErrorMessages));
+                        iMarkdownPageGenerator xGenerator = new iMarkdownPageGenerator (xParser, xMergedTaskList);
                     }
                 }
             }

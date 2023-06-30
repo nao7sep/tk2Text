@@ -86,7 +86,7 @@ namespace tk2Text
                         {
                             string [] xLines = xParagraph.nSplitIntoLines ();
 
-                            if (xLines.Length != 4)
+                            if (xLines.Length != 5)
                                 continue;
 
                             if (xLines [0].Length <= 2 || xLines [0][0] != '[' || xLines [0][xLines [0].Length - 1] != ']')
@@ -101,27 +101,37 @@ namespace tk2Text
                             if (nFile.Exists (xFullPath) == false)
                                 continue;
 
-                            if (xLines [1].StartsWith ("Guid:", StringComparison.OrdinalIgnoreCase) == false)
+                            if (xLines [1].StartsWith ("Guid:", StringComparison.OrdinalIgnoreCase) == false ||
+                                    Guid.TryParse (xLines [1].AsSpan ("Guid:".Length), out Guid xGuid) == false)
                                 continue;
 
-                            if (Guid.TryParse (xLines [1].AsSpan ("Guid:".Length), out Guid xGuid))
+                            if (xLines [2].StartsWith ("ParentGuid:", StringComparison.OrdinalIgnoreCase) == false)
+                                continue;
+
+                            // ParentGuid は、空か有効な文字列か
+                            // 長さが1以上の場合のみチェックし、問題があれば抜ける
+
+                            Guid? xParentGuid = null;
+
+                            if (xLines [2].Length > "ParentGuid:".Length)
                             {
-                                if (xLines [2].StartsWith ("AttachedAt:", StringComparison.OrdinalIgnoreCase) == false)
+                                if (Guid.TryParse (xLines [2].AsSpan ("ParentGuid:".Length), out Guid xParentGuidAlt) == false)
                                     continue;
 
-                                if (DateTime.TryParseExact (xLines [2].AsSpan ("AttachedAt:".Length), "O",
-                                    CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime xAttachedAtUtc))
-                                {
-                                    if (xLines [3].StartsWith ("ModifiedAt:", StringComparison.OrdinalIgnoreCase) == false)
-                                        continue;
-
-                                    if (DateTime.TryParseExact (xLines [3].AsSpan ("ModifiedAt:".Length), "O",
-                                        CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime xModifiedAtUtc))
-                                    {
-                                        xFiles.Add (new iAttachedFileInfo (xFullPath, xGuid, xAttachedAtUtc, xModifiedAtUtc));
-                                    }
-                                }
+                                xParentGuid = xParentGuidAlt;
                             }
+
+                            if (xLines [3].StartsWith ("AttachedAt:", StringComparison.OrdinalIgnoreCase) == false ||
+                                DateTime.TryParseExact (xLines [3].AsSpan ("AttachedAt:".Length), "O",
+                                    CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime xAttachedAtUtc) == false)
+                                continue;
+
+                            if (xLines [4].StartsWith ("ModifiedAt:", StringComparison.OrdinalIgnoreCase) == false ||
+                                DateTime.TryParseExact (xLines [4].AsSpan ("ModifiedAt:".Length), "O",
+                                    CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime xModifiedAtUtc) == false)
+                                continue;
+
+                            xFiles.Add (new iAttachedFileInfo (xFullPath, xGuid, xParentGuid, xAttachedAtUtc, xModifiedAtUtc));
 
                             // タスクのファイルと同様、おかしいものは単純にスルーされる
                             // 今のところ添付ファイルを編集する機能が taskKiller にないため、

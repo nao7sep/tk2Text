@@ -12,14 +12,17 @@ namespace tk2Text
 
         public readonly Guid Guid;
 
+        public readonly Guid? ParentGuid;
+
         public readonly DateTime AttachedAtUtc;
 
         public readonly DateTime ModifiedAtUtc;
 
-        public iAttachedFileInfo (string path, Guid guid, DateTime attachedAtUtc, DateTime modifiedAtUtc)
+        public iAttachedFileInfo (string path, Guid guid, Guid? parentGuid, DateTime attachedAtUtc, DateTime modifiedAtUtc)
         {
             File = new FileInfo (path);
             Guid = guid;
+            ParentGuid = parentGuid;
             AttachedAtUtc = attachedAtUtc;
             ModifiedAtUtc = modifiedAtUtc;
         }
