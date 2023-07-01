@@ -125,7 +125,10 @@ namespace tk2Text
 #if DEBUG
                         Console.WriteLine ("Parsed Category: " + xValue);
 #endif
-                        xCategoryNames.Add (xValue);
+                        // Include などと異なり、同じ値が複数回入ると出力に影響がある
+
+                        if (xCategoryNames.Contains (xValue, StringComparer.OrdinalIgnoreCase) == false)
+                            xCategoryNames.Add (xValue);
                     }
 
                     else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);
@@ -144,7 +147,7 @@ namespace tk2Text
 
                     var xValues = xTrimmed.Substring ("Attributes:".Length).Split ('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-                    if (xValues.Length == 5 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [1]))
+                    if (xValues.Length == 6 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [2]))
                     {
 #if DEBUG
                         Console.WriteLine ($"Parsed Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]} | {xValues [4]} | {xValues [5]}");
