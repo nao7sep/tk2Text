@@ -11,30 +11,11 @@ namespace tk2Text
     {
         public readonly List <iTaskListDirectoryInfo> Directories = new List <iTaskListDirectoryInfo> ();
 
-        public readonly string DestDirectoryPath;
+        public readonly iAttributesInfo Attributes;
 
-        public readonly string DestFileName;
-
-        private string? mDestFilePath;
-
-        public string DestFilePath
+        public iMergedTaskListInfo (iAttributesInfo attributes)
         {
-            get
-            {
-                if (mDestFilePath == null)
-                    mDestFilePath = nPath.Combine (DestDirectoryPath, DestFileName);
-
-                return mDestFilePath;
-            }
-        }
-
-        public readonly string Title;
-
-        public iMergedTaskListInfo (string destDirectoryPath, string destFileName, string title)
-        {
-            DestDirectoryPath = destDirectoryPath;
-            DestFileName = destFileName;
-            Title = title;
+            Attributes = attributes;
         }
 
         private IEnumerable <TaskInfo>? mAllTasks;

@@ -46,7 +46,21 @@ namespace tk2Text
 
                     foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists)
                     {
-                        iMarkdownPageGenerator xGenerator = new iMarkdownPageGenerator (xParser, xMergedTaskList);
+                        iHtmlPageGenerator xGenerator = new iHtmlPageGenerator (xParser, xMergedTaskList);
+
+                        if (xGenerator.TryGenerate (out iPageGenerationResult xResult))
+                        {
+                            if (xResult == iPageGenerationResult.Created)
+                                ConsoleAlt.WriteInfoLine ("ページが作成されました: " + xMergedTaskList.Attributes.DestFilePath);
+
+                            else if (xResult == iPageGenerationResult.Updated)
+                                ConsoleAlt.WriteInfoLine ("ページが更新されました: " + xMergedTaskList.Attributes.DestFilePath);
+
+                            else if (xResult == iPageGenerationResult.Unchanged)
+                                Console.WriteLine ("ページが既に最新です: " + xMergedTaskList.Attributes.DestFilePath);
+                        }
+
+                        else ConsoleAlt.WriteErrorLine (string.Join (Environment.NewLine, xGenerator.ErrorMessages));
                     }
                 }
             }

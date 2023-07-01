@@ -10,10 +10,13 @@ namespace tk2Text
 {
     internal class iTaskListDirectoryInfo
     {
+        public readonly iParametersStringParser Parser;
+
         public readonly string Path;
 
-        public iTaskListDirectoryInfo (string path)
+        public iTaskListDirectoryInfo (iParametersStringParser parser, string path)
         {
+            Parser = parser;
             Path = path;
         }
 
@@ -44,6 +47,21 @@ namespace tk2Text
                             try
                             {
                                 TaskInfo xTask = Shared.LoadTask (xFilePath, xStateManager, xOrderManager);
+
+                                if (Parser.ExcludedItems.Contains (xTask.Guid))
+                                    continue;
+
+                                // Shared.LoadTask の実装を変更せず、メモの一部を除外
+                                // 無理やりな実装だが、実際に除外されるものが少ないのでコストは小さい
+
+                                for (int temp = xTask.Notes.Count - 1; temp >= 0; temp --)
+                                {
+                                    NoteInfo xNote = xTask.Notes [temp];
+
+                                    if (Parser.ExcludedItems.Contains (xNote.Guid))
+                                        xTask.Notes.RemoveAt (temp);
+                                }
+
                                 xTasks.Add (xTask);
                             }
 

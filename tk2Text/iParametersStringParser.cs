@@ -20,6 +20,8 @@ namespace tk2Text
 
         public readonly IEnumerable <iMergedPathsInfo> MergedPaths;
 
+        public readonly IEnumerable <string> CategoryNames;
+
         public readonly IEnumerable <iAttributesInfo> Attributes;
 
         public readonly IEnumerable <Guid> ExcludedItems;
@@ -33,6 +35,7 @@ namespace tk2Text
             List <string>
                 xIncludedPaths = new List <string> (),
                 xExcludedPaths = new List <string> (),
+                xCategoryNames = new List <string> (),
                 xErrorMessages = new List <string> ();
 
             List <iMergedPathsInfo> xMergedPaths = new List <iMergedPathsInfo> ();
@@ -66,7 +69,7 @@ namespace tk2Text
                     if (Path.IsPathFullyQualified (xValue))
                     {
 #if DEBUG
-                        Console.WriteLine ("Include: " + xValue);
+                        Console.WriteLine ("Parsed Include: " + xValue);
 #endif
                         xIncludedPaths.Add (xValue);
                     }
@@ -81,7 +84,7 @@ namespace tk2Text
                     if (Path.IsPathFullyQualified (xValue))
                     {
 #if DEBUG
-                        Console.WriteLine ("Exclude: " + xValue);
+                        Console.WriteLine ("Parsed Exclude: " + xValue);
 #endif
                         xExcludedPaths.Add (xValue);
                     }
@@ -89,7 +92,7 @@ namespace tk2Text
                     else if (Guid.TryParse (xValue, out Guid xResult))
                     {
 #if DEBUG
-                        Console.WriteLine ("Exclude: " + xResult.ToString ("D"));
+                        Console.WriteLine ("Parsed Exclude: " + xResult.ToString ("D"));
 #endif
                         xExcludedItems.Add (xResult);
                     }
@@ -105,9 +108,24 @@ namespace tk2Text
                     {
 #if DEBUG
                         // First は速そうなので値をキャッシュしない
-                        Console.WriteLine (string.Join (Environment.NewLine, xValues.Skip (1).Select (x => $"Merge: {xValues.First ()} | {x}")));
+                        Console.WriteLine (string.Join (Environment.NewLine, xValues.Skip (1).Select (x => $"Parsed Merge: {xValues.First ()} | {x}")));
 #endif
                         xMergedPaths.AddRange (xValues.Skip (1).Select (x => new iMergedPathsInfo (xValues.First (), x)));
+                    }
+
+                    else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);
+                }
+
+                else if (xTrimmed.StartsWith ("Category:", StringComparison.OrdinalIgnoreCase))
+                {
+                    string xValue = xTrimmed.Substring ("Category:".Length).TrimStart ();
+
+                    if (string.IsNullOrEmpty (xValue) == false)
+                    {
+#if DEBUG
+                        Console.WriteLine ("Parsed Category: " + xValue);
+#endif
+                        xCategoryNames.Add (xValue);
                     }
 
                     else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);
@@ -126,12 +144,12 @@ namespace tk2Text
 
                     var xValues = xTrimmed.Substring ("Attributes:".Length).Split ('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-                    if (xValues.Length == 4 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [1]))
+                    if (xValues.Length == 5 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [1]))
                     {
 #if DEBUG
-                        Console.WriteLine ($"Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]}");
+                        Console.WriteLine ($"Parsed Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]} | {xValues [4]} | {xValues [5]}");
 #endif
-                        xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2], xValues [3]));
+                        xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2], xValues [3], xValues [4], xValues [5]));
                     }
 
                     else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);
@@ -141,6 +159,7 @@ namespace tk2Text
             IncludedPaths = xIncludedPaths;
             ExcludedPaths = xExcludedPaths;
             MergedPaths = xMergedPaths;
+            CategoryNames = xCategoryNames;
             Attributes = xAttributes;
             ExcludedItems = xExcludedItems;
             ErrorMessages = xErrorMessages;

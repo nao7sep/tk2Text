@@ -49,7 +49,7 @@ namespace tk2Text
             ToArray (); // 遅延実行によるトラブルを回避
 #if DEBUG
             if (xAllPaths.Length > 0)
-                Console.WriteLine (string.Join (Environment.NewLine, xAllPaths.Select (x => $"DirectoryPath: {x}")));
+                Console.WriteLine (string.Join (Environment.NewLine, xAllPaths.Select (x => $"Detected Directory: {x}")));
 #endif
             if (xAllPaths.Length == 0)
                 xErrorMessages.Add ("処理対象のタスクリストが一つもありません。");
@@ -66,13 +66,18 @@ namespace tk2Text
             // たとえば A と B のタスクリストが統合されるにおいて、A の Title は Hoge、B の Title は Moge と指定すれば、
             //     Hoge を含む指定と Moge を含む指定のうち先に見つかったものが A と B の両方に適用される
 
+            // 追記: 未定義のカテゴリーは、メニューの生成時にタスクリストの順序に影響するため、チェックが必要
+
+            if (Parser.Attributes.Any (x => Parser.CategoryNames.Contains (x.CategoryName, StringComparer.OrdinalIgnoreCase) == false))
+                xErrorMessages.Add ("未定義のカテゴリーが指定されています。");
+
             iMergedPathsEqualityComparer xComparer = new iMergedPathsEqualityComparer (Parser.MergedPaths);
 
             MergedTaskLists = xAllPaths.GroupBy (x => x, xComparer).Select (y =>
             {
 #if DEBUG
                 if (y.Count () >= 2)
-                    Console.WriteLine ("MergedDirectoryPaths: " + string.Join (" | ", y));
+                    Console.WriteLine ("Merged Directories: " + string.Join (" | ", y));
 #endif
                 // 属性情報を順に見ていき、SourceDirectoryPath が一つ以上のディレクトリーパスのいずれかと一致する最初のエントリーを探す
                 // 見つからなければ、SourceDirectoryPath など全てが string.Empty の iAttributesInfo.Empty が得られる
@@ -81,10 +86,10 @@ namespace tk2Text
                 if (string.IsNullOrEmpty (xAttributes.SourceDirectoryPath))
                     xErrorMessages.Add ("属性情報がありません: " + string.Join (" | ", y));
 #if DEBUG
-                else Console.WriteLine ($"Attributes: {string.Join (" | ", y)} | {xAttributes.DestDirectoryPath} | {xAttributes.DestFileName} | {xAttributes.Title}");
+                else Console.WriteLine ($"Applied Attributes: {string.Join (" | ", y)} | {xAttributes.ToString (includesSourceDirectoryPath: false)}");
 #endif
-                iMergedTaskListInfo xMergedTaskList = new iMergedTaskListInfo (xAttributes.DestDirectoryPath, xAttributes.DestFileName, xAttributes.Title);
-                xMergedTaskList.Directories.AddRange (y.Select (z => new iTaskListDirectoryInfo (z)));
+                iMergedTaskListInfo xMergedTaskList = new iMergedTaskListInfo (xAttributes);
+                xMergedTaskList.Directories.AddRange (y.Select (z => new iTaskListDirectoryInfo (Parser, z)));
                 return xMergedTaskList;
             }).
             ToArray (); // 遅延実行によるトラブルを回避
