@@ -1,7 +1,9 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Nekote;
@@ -30,22 +32,29 @@ namespace tk2Text
             // 実装がややこしくなるし、たいてい作業ミスだろうから、同じファイルが複数回添付されている場合に対処しない
             // ページを見る人の分かりやすさのために同じファイルや画像を複数のタスクやメモに表示する運用は今のところ考えにくい
 
-            List <string> xHandledAttachedFilePaths = new List <string> ();
+            List <(string DestRelativeFilePath, string DestFilePath, iAttachedFileInfo File)> xHandledAttachedFiles =
+                new List <(string DestRelativeFilePath, string DestFilePath, iAttachedFileInfo File)> ();
 
             foreach (iAttachedFileInfo xAttachedFile in MergedTaskList.AttachedFiles.OrderBy (x => x.AttachedAtUtc))
             {
                 for (int temp = 0; ; temp ++)
                 {
-                    string xAttachedFileDestPath;
+                    string xAttachedFileDestRelativePath,
+                        xAttachedFileDestPath;
 
                     if (temp == 0)
-                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryPath,
-                            xAttachedFile.File.Name);
+                    {
+                        xAttachedFileDestRelativePath = xAttachedFile.File.Name;
+                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryPath, xAttachedFileDestRelativePath);
+                    }
 
-                    else xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryPath,
-                        temp.ToString (CultureInfo.InvariantCulture), xAttachedFile.File.Name);
+                    else
+                    {
+                        xAttachedFileDestRelativePath = nPath.Combine (temp.ToString (CultureInfo.InvariantCulture), xAttachedFile.File.Name);
+                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryPath, xAttachedFileDestRelativePath);
+                    }
 
-                    if (xHandledAttachedFilePaths.Contains (xAttachedFileDestPath, StringComparer.OrdinalIgnoreCase) == false)
+                    if (xHandledAttachedFiles.All (x => string.Equals (x.DestFilePath, xAttachedFileDestPath, StringComparison.OrdinalIgnoreCase) == false))
                     {
                         try
                         {
@@ -99,7 +108,7 @@ namespace tk2Text
 
                         finally
                         {
-                            xHandledAttachedFilePaths.Add (xAttachedFileDestPath);
+                            xHandledAttachedFiles.Add ((xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile));
                         }
                     }
                 }
@@ -107,13 +116,13 @@ namespace tk2Text
 
             if (nDirectory.Exists (MergedTaskList.Attributes.AttachedFileDirectoryPath))
             {
-                string [] xUnhandledAttachedFiles = Directory.GetFiles (MergedTaskList.Attributes.AttachedFileDirectoryPath, "*.*", SearchOption.AllDirectories).
-                    Where (x => xHandledAttachedFilePaths.Contains (x, StringComparer.OrdinalIgnoreCase) == false).
+                string [] xUnhandledAttachedFilePaths = Directory.GetFiles (MergedTaskList.Attributes.AttachedFileDirectoryPath, "*.*", SearchOption.AllDirectories).
+                    Where (x => xHandledAttachedFiles.All (y => string.Equals (y.DestFilePath, x, StringComparison.OrdinalIgnoreCase) == false)).
                     ToArray (); // LINQ が複数回処理されるのを回避
 
-                if (xUnhandledAttachedFiles.Length > 0)
+                if (xUnhandledAttachedFilePaths.Length > 0)
                 {
-                    xErrorMessages.AddRange (xUnhandledAttachedFiles.Select (x => $"古い添付ファイルが残っています: {x}"));
+                    xErrorMessages.AddRange (xUnhandledAttachedFilePaths.Select (x => $"古い添付ファイルが残っています: {x}"));
 
                     // こちらは、そのままページを生成しても処理において特に問題がないが、
                     //     すぐに対処してもらわないとユーザーが忘れうるので、いったん打ち切る
@@ -123,7 +132,42 @@ namespace tk2Text
                 }
             }
 
-            StringBuilder xBuilder = new StringBuilder ();
+            iHtmlStringBuilder xBuilder = new iHtmlStringBuilder ();
+
+            xBuilder.OpenTag ("html");
+
+            xBuilder.OpenTag ("head");
+            xBuilder.AddTag ("title", safeValue: WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
+            xBuilder.CloseTag (); // head
+
+            xBuilder.OpenTag ("body");
+
+            xBuilder.AddTag ("div", new [] { "class", "title" }, WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
+
+            void iAddAttachedFilesPart (Guid? parentGuid)
+            {
+                var xAttachedFiles = xHandledAttachedFiles.Where (x => x.File.ParentGuid == parentGuid).ToArray ();
+
+                if (xAttachedFiles.Length > 0)
+                {
+                    xBuilder.OpenTag ("div", new [] { "class", "files" });
+
+                    foreach (var xAttachedFile in xAttachedFiles)
+                    {
+                        xBuilder.OpenTag ("div", new [] { "class", "file" });
+
+                        // todo
+
+                        xBuilder.CloseTag (); // div.file
+                    }
+
+                    xBuilder.CloseTag (); // div.files
+                }
+            }
+
+            iAddAttachedFilesPart (null);
+
+            xBuilder.OpenTag ("div", new [] { "class", "entries" });
 
             // (long, TaskInfo?, NoteInfo?) も考えたが、1項目1エントリーなので object の方が良さそう
             // ボックス化などを伴わない、LINQ によるスマートな方法を探したが、自分には分からなかった
@@ -140,16 +184,53 @@ namespace tk2Text
 
             foreach (object xEntry in xEntries.OrderBy (x => x.Utc).Select (y => y.Entry))
             {
+                void iAddNotePart (NoteInfo note)
+                {
+                    xBuilder.OpenTag ("div", new [] { "class", "note" });
+
+                    xBuilder.OpenTag ("div", new [] { "class", "contents" });
+
+                    // todo
+
+                    xBuilder.CloseTag (); // div.contents
+
+                    iAddAttachedFilesPart (note.Guid);
+
+                    xBuilder.CloseTag (); // div.note
+                }
+
                 if (xEntry.GetType () == typeof (TaskInfo))
                 {
                     TaskInfo xTask = (TaskInfo) xEntry;
+
+                    xBuilder.OpenTag ("div", new [] { "class", $"task {(xTask.State == TaskState.Done ? "done" : "canceled")}" });
+
+                    // todo
+
+                    iAddAttachedFilesPart (xTask.Guid);
+
+                    if (xTask.Notes.Count > 0)
+                    {
+                        xBuilder.OpenTag ("notes");
+
+                        foreach (NoteInfo xNote in xTask.Notes)
+                            iAddNotePart (xNote);
+
+                        xBuilder.CloseTag (); // div.notes
+                    }
+
+                    xBuilder.CloseTag (); // div.task
                 }
 
                 else if (xEntry.GetType () == typeof (NoteInfo))
-                {
-                    NoteInfo xNote = (NoteInfo) xEntry;
-                }
+                    iAddNotePart ((NoteInfo) xEntry);
             }
+
+            xBuilder.CloseTag (); // div.entries
+
+            xBuilder.CloseTag (); // body
+
+            xBuilder.CloseTag (); // html
 
             string xFileContents = xBuilder.ToString ();
 
