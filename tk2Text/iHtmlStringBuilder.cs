@@ -110,6 +110,13 @@ namespace tk2Text
             return this;
         }
 
+        public iHtmlStringBuilder Append (string value)
+        {
+            Builder.Append (value);
+
+            return this;
+        }
+
         public override string ToString ()
         {
             return Builder.ToString ();

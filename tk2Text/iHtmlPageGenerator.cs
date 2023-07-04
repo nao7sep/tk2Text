@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Nekote;
 
@@ -23,6 +24,70 @@ namespace tk2Text
             Parser = parser;
             MergedTaskList = mergedTaskList;
             ErrorMessages = new List <string> ();
+        }
+
+        // メアドや URL をリンク化しながら全体を HTML エンコードする
+        // さらに、入力がメモなら段落分けして <p> にも入れる
+
+        private static string iHtmlEncode (string value, bool isTask, int? indentationWidth)
+        {
+            // ChatGPT に聞いた正規表現
+            // 詳細については taskKiller のログの方に
+
+            // regex という識別子一つで「パターン」のニュアンスも含みそうだが、
+            //     regex だけでは「正規表現の」と形容詞的なところもあるのでこのまま
+
+            const string
+                xEmailAddressRegexPattern = @"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}",
+                xUrlRegexPattern = @"(?:https?://|www\.)\S+",
+                xSinglePattern = $"(?<EmailAddress>{xEmailAddressRegexPattern})|(?<Url>{xUrlRegexPattern})";
+
+            StringBuilder xBuilder = new StringBuilder ();
+
+            int xProcessedLength = 0;
+
+            foreach (Match xMatch in Regex.Matches (value, xSinglePattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase))
+            {
+                xBuilder.Append (WebUtility.HtmlEncode (value.Substring (xProcessedLength, xMatch.Index - xProcessedLength)));
+
+                // Group Class (System.Text.RegularExpressions) | Microsoft Learn
+                // https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.group
+
+                // Group.Success Property (System.Text.RegularExpressions) | Microsoft Learn
+                // https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.group.success
+
+                bool xIsEmailAddress = xMatch.Groups ["EmailAddress"].Success;
+
+                // taskKiller のメモはブラウザーからのコピペなので、この時点で URL エンコードはできている
+                // 試しに、さらに URL エンコードをやってみたところ :// の部分などまでエンコードされ、表示が乱れ、リンクも機能しなかった
+                // 一応 HTML エンコードを行うのは、クエリー文字列などに & などが含まれていてもそのまま出力されないための作法
+
+                string xEncodedValue = WebUtility.HtmlEncode (xMatch.Value),
+                    xMailToPart = xIsEmailAddress ? "mailto:" : string.Empty,
+                    xTargetPart = xIsEmailAddress ? string.Empty : " target=\"_blank\"";
+
+                xBuilder.Append ($"<a href=\"{xMailToPart}{xEncodedValue}\"{xTargetPart}>{xEncodedValue}</a>");
+
+                xProcessedLength = xMatch.Index + xMatch.Length;
+            }
+
+            if (value.Length > xProcessedLength)
+                xBuilder.Append (WebUtility.HtmlEncode (value.Substring (xProcessedLength)));
+
+            // タスクなら、<p> に入れず、インデントもつけずに返す
+
+            if (isTask)
+                return xBuilder.ToString ();
+
+            string xIndentationString = iHtmlStringBuilder.IndentationString.Substring (0, indentationWidth!.Value),
+                xWiderIndentationString = iHtmlStringBuilder.IndentationString.Substring (0, indentationWidth!.Value + 4);
+
+            return string.Concat (xBuilder.ToString ().nSplitIntoParagraphs ().Select (x =>
+            {
+                return xIndentationString + "<p>" +
+                    string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}", x.nSplitIntoLines ()) +
+                    "</p>" + Environment.NewLine;
+            }));
         }
 
         public bool TryGenerate (out iPageGenerationResult result)
@@ -138,6 +203,7 @@ namespace tk2Text
 
             xBuilder.OpenTag ("head");
             xBuilder.AddTag ("title", safeValue: WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
+            xBuilder.AddTag ("link", new [] { "href", "tk2Text.css", "rel", "stylesheet" });
             xBuilder.CloseTag (); // head
 
             xBuilder.OpenTag ("body");
@@ -190,7 +256,7 @@ namespace tk2Text
 
                     xBuilder.OpenTag ("div", new [] { "class", "contents" });
 
-                    // todo
+                    xBuilder.Append (iHtmlEncode (note.Contents!, false, xBuilder.IndentationWidth));
 
                     xBuilder.CloseTag (); // div.contents
 
@@ -202,10 +268,20 @@ namespace tk2Text
                 if (xEntry.GetType () == typeof (TaskInfo))
                 {
                     TaskInfo xTask = (TaskInfo) xEntry;
+                    string xGuidString = xTask.Guid.ToString ("D");
 
-                    xBuilder.OpenTag ("div", new [] { "class", $"task {(xTask.State == TaskState.Done ? "done" : "canceled")}" });
+                    xBuilder.OpenTag ("div", new [] { "id", xGuidString, "class", $"task {(xTask.State == TaskState.Done ? "done" : "canceled")}" });
 
-                    // todo
+                    string xFirstPart = xTask.State == TaskState.Done ? "&check;" : "&cross;",
+                        xLastPart = $"<a href=\"#{xGuidString}\">&infin;</a>";
+
+                    // 今のところ <b> で足りるが、HTML 文書構造の各部には装飾でなく「意味」をつけていきたい
+                    // それなら CSS に装飾を丸投げでき、構造と装飾がゴチャゴチャに混ざらない
+
+                    // <b>: The Bring Attention To element - HTML: HyperText Markup Language | MDN
+                    // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/b
+
+                    xBuilder.AddTag ("div", new [] { "class", "contents" }, $"{xFirstPart} <span class=\"contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span> {xLastPart}");
 
                     iAddAttachedFilesPart (xTask.Guid);
 
