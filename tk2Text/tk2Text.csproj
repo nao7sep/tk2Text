@@ -47,4 +47,10 @@
       </Reference>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="tk2Text.css">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

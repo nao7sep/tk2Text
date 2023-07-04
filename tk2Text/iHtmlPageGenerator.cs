@@ -94,6 +94,10 @@ namespace tk2Text
         {
             List <string> xErrorMessages = (List <string>) ErrorMessages;
 
+            // =============================================================================
+            //     添付ファイルを処理
+            // =============================================================================
+
             // 実装がややこしくなるし、たいてい作業ミスだろうから、同じファイルが複数回添付されている場合に対処しない
             // ページを見る人の分かりやすさのために同じファイルや画像を複数のタスクやメモに表示する運用は今のところ考えにくい
 
@@ -197,6 +201,38 @@ namespace tk2Text
                 }
             }
 
+            // =============================================================================
+            //     CSS ファイルをコピー
+            // =============================================================================
+
+            const string xCssFileName = "tk2Text.css";
+
+            FileInfo xSourceCssFile = new FileInfo (nPath.Combine (iShared.AppDirectoryPath, xCssFileName)),
+                xDestCssFile = new FileInfo (nPath.Combine (MergedTaskList.Attributes.DestDirectoryPath, xCssFileName));
+
+            if (xDestCssFile.Exists == false ||
+                (xSourceCssFile.LastWriteTimeUtc - xDestCssFile.LastWriteTimeUtc).TotalSeconds > 3)
+            {
+#if DEBUG
+                if (xDestCssFile.Exists == false)
+                    Console.WriteLine ("Created CSS File: " + xDestCssFile.FullName);
+
+                else Console.WriteLine ("Updated CSS File: " + xDestCssFile.FullName);
+#endif
+                xSourceCssFile.CopyTo (xDestCssFile.FullName, true);
+            }
+
+            else
+            {
+#if DEBUG
+                Console.WriteLine ("Unchanged CSS File: " + xDestCssFile.FullName);
+#endif
+            }
+
+            // =============================================================================
+            //     HTML を生成
+            // =============================================================================
+
             iHtmlStringBuilder xBuilder = new iHtmlStringBuilder ();
 
             xBuilder.OpenTag ("html");
@@ -281,13 +317,13 @@ namespace tk2Text
                     // <b>: The Bring Attention To element - HTML: HyperText Markup Language | MDN
                     // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/b
 
-                    xBuilder.AddTag ("div", new [] { "class", "contents" }, $"{xFirstPart} <span class=\"contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span> {xLastPart}");
+                    xBuilder.AddTag ("div", new [] { "class", "contents" }, $"{xFirstPart}<span class=\"contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span>{xLastPart}");
 
                     iAddAttachedFilesPart (xTask.Guid);
 
                     if (xTask.Notes.Count > 0)
                     {
-                        xBuilder.OpenTag ("notes");
+                        xBuilder.OpenTag ("div", new [] { "class", "notes" });
 
                         foreach (NoteInfo xNote in xTask.Notes)
                             iAddNotePart (xNote);
@@ -307,6 +343,10 @@ namespace tk2Text
             xBuilder.CloseTag (); // body
 
             xBuilder.CloseTag (); // html
+
+            // =============================================================================
+            //     ファイルを読み書き
+            // =============================================================================
 
             string xFileContents = xBuilder.ToString ();
 

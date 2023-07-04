@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Nekote;
+﻿using Nekote;
 
 namespace tk2Text
 {
@@ -9,7 +8,7 @@ namespace tk2Text
         {
             try
             {
-                string xParametersFilePath = nPath.Combine (nPath.GetDirectoryPath (Assembly.GetExecutingAssembly ().Location), "Parameters.txt");
+                string xParametersFilePath = nPath.Combine (iShared.AppDirectoryPath, "Parameters.txt");
 
                 if (nFile.Exists (xParametersFilePath) == false)
                 {

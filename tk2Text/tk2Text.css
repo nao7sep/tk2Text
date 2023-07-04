@@ -1,0 +1,80 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans+JP&display=swap');
+
+body
+{
+    margin: 0;
+    font-family: 'IBM Plex Mono', 'IBM Plex Sans JP', sans-serif;
+    font-size: 1em;
+    line-height: 1.5;
+}
+
+div.task, div.note, div.file
+{
+    margin: 10px;
+    border: 1px solid #CCC;
+    border-radius: 10px;
+}
+
+div.title
+{
+    background-color:#369;
+    padding: 20px 30px;
+    font-size: 2em;
+    font-weight: bold;
+    color: #FFF;
+}
+
+div.entries
+{
+}
+
+div.task
+{
+}
+
+div.done
+{
+    background-color: #EEF;
+}
+
+div.canceled
+{
+    background-color: #FEE;
+}
+
+div.task > div.contents
+{
+    margin: 10px 15px;
+}
+
+div.task span.contents
+{
+    margin: auto 10px;
+    font-weight: bold;
+}
+
+div.notes
+{
+}
+
+div.note
+{
+    background-color: #FFF;
+}
+
+div.note > div.contents
+{
+}
+
+div.note p
+{
+    margin: 10px 15px;
+}
+
+div.files
+{
+}
+
+div.file
+{
+}
