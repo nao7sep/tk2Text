@@ -49,7 +49,7 @@
 
     <ItemGroup>
       <None Update="tk2Text.css">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 

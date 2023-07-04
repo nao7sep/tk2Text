@@ -6,6 +6,19 @@ body
     font-family: 'IBM Plex Mono', 'IBM Plex Sans JP', sans-serif;
     font-size: 1em;
     line-height: 1.5;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+a
+{
+    color: blue;
+    text-decoration: underline;
+}
+
+a:hover, a:active, a:focus
+{
+    font-weight: bold;
 }
 
 div.task, div.note, div.file
@@ -17,11 +30,30 @@ div.task, div.note, div.file
 
 div.title
 {
-    background-color:#369;
+    background-color: blueviolet;
     padding: 20px 30px;
     font-size: 2em;
     font-weight: bold;
-    color: #FFF;
+}
+
+@media (width < 576px)
+{
+    div.title
+    {
+        padding: 15px 22.5px;
+        font-size: 1.5em;
+    }
+}
+
+a.title
+{
+    color: white;
+    text-decoration: none;
+}
+
+a.title:hover, a.title:active, a.title:focus
+{
+    text-decoration: underline;
 }
 
 div.entries
@@ -37,9 +69,21 @@ div.done
     background-color: #EEF;
 }
 
+div.done:hover
+{
+    background-color: deepskyblue;
+    color: white;
+}
+
 div.canceled
 {
     background-color: #FEE;
+}
+
+div.canceled:hover
+{
+    background-color: deeppink;
+    color: white;
 }
 
 div.task > div.contents
@@ -53,13 +97,24 @@ div.task span.contents
     font-weight: bold;
 }
 
+a.permalink
+{
+    visibility: hidden;
+}
+
+div.task:hover a.permalink
+{
+    visibility: visible;
+}
+
 div.notes
 {
 }
 
 div.note
 {
-    background-color: #FFF;
+    background-color: white;
+    color: black;
 }
 
 div.note > div.contents
@@ -68,7 +123,7 @@ div.note > div.contents
 
 div.note p
 {
-    margin: 10px 15px;
+    margin: 15px 20px;
 }
 
 div.files

@@ -235,16 +235,21 @@ namespace tk2Text
 
             iHtmlStringBuilder xBuilder = new iHtmlStringBuilder ();
 
+            xBuilder.Append ($"<!DOCTYPE html>{Environment.NewLine}");
+
             xBuilder.OpenTag ("html");
 
             xBuilder.OpenTag ("head");
             xBuilder.AddTag ("title", safeValue: WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
+            xBuilder.AddTag ("meta", new [] { "name", "viewport", "content", "width=device-width, initial-scale=1" });
             xBuilder.AddTag ("link", new [] { "href", "tk2Text.css", "rel", "stylesheet" });
             xBuilder.CloseTag (); // head
 
             xBuilder.OpenTag ("body");
 
-            xBuilder.AddTag ("div", new [] { "class", "title" }, WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
+            xBuilder.OpenTag ("div", new [] { "class", "title" });
+            xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (MergedTaskList.Attributes.DestFileName), "class", "title" }, WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
+            xBuilder.CloseTag (); // div.title
 
             void iAddAttachedFilesPart (Guid? parentGuid)
             {
@@ -309,7 +314,7 @@ namespace tk2Text
                     xBuilder.OpenTag ("div", new [] { "id", xGuidString, "class", $"task {(xTask.State == TaskState.Done ? "done" : "canceled")}" });
 
                     string xFirstPart = xTask.State == TaskState.Done ? "&check;" : "&cross;",
-                        xLastPart = $"<a href=\"#{xGuidString}\">&infin;</a>";
+                        xLastPart = $"<a href=\"#{xGuidString}\" class=\"permalink\">&infin;</a>";
 
                     // 今のところ <b> で足りるが、HTML 文書構造の各部には装飾でなく「意味」をつけていきたい
                     // それなら CSS に装飾を丸投げでき、構造と装飾がゴチャゴチャに混ざらない
