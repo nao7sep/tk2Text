@@ -11,5 +11,10 @@ namespace tk2Text
     internal static class iShared
     {
         public static readonly string AppDirectoryPath = nPath.GetDirectoryPath (Assembly.GetExecutingAssembly ().Location);
+
+        public static string ToUnixDirectorySeparators (string path)
+        {
+            return path.Replace ('\\', '/');
+        }
     }
 }

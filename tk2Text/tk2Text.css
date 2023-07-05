@@ -132,4 +132,24 @@ div.files
 
 div.file
 {
+    background-color: white;
+    color: black;
+}
+
+a.file
+{
+    display: block;
+    margin: 15px 20px;
+}
+
+a.image
+{
+    margin: 15px;
+}
+
+img.image
+{
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
 }

@@ -101,8 +101,7 @@ namespace tk2Text
             // 実装がややこしくなるし、たいてい作業ミスだろうから、同じファイルが複数回添付されている場合に対処しない
             // ページを見る人の分かりやすさのために同じファイルや画像を複数のタスクやメモに表示する運用は今のところ考えにくい
 
-            List <(string DestRelativeFilePath, string DestFilePath, iAttachedFileInfo File)> xHandledAttachedFiles =
-                new List <(string DestRelativeFilePath, string DestFilePath, iAttachedFileInfo File)> ();
+            List <iAttachedFileManager> xHandledAttachedFiles = new List <iAttachedFileManager> ();
 
             foreach (iAttachedFileInfo xAttachedFile in MergedTaskList.AttachedFiles.OrderBy (x => x.AttachedAtUtc))
             {
@@ -113,14 +112,14 @@ namespace tk2Text
 
                     if (temp == 0)
                     {
-                        xAttachedFileDestRelativePath = xAttachedFile.File.Name;
-                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryPath, xAttachedFileDestRelativePath);
+                        xAttachedFileDestRelativePath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryRelativePath, xAttachedFile.File.Name);
+                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.DestDirectoryPath, xAttachedFileDestRelativePath);
                     }
 
                     else
                     {
-                        xAttachedFileDestRelativePath = nPath.Combine (temp.ToString (CultureInfo.InvariantCulture), xAttachedFile.File.Name);
-                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryPath, xAttachedFileDestRelativePath);
+                        xAttachedFileDestRelativePath = nPath.Combine (MergedTaskList.Attributes.AttachedFileDirectoryRelativePath, temp.ToString (CultureInfo.InvariantCulture), xAttachedFile.File.Name);
+                        xAttachedFileDestPath = nPath.Combine (MergedTaskList.Attributes.DestDirectoryPath, xAttachedFileDestRelativePath);
                     }
 
                     if (xHandledAttachedFiles.All (x => string.Equals (x.DestFilePath, xAttachedFileDestPath, StringComparison.OrdinalIgnoreCase) == false))
@@ -149,6 +148,7 @@ namespace tk2Text
 #if DEBUG
                                     Console.WriteLine ("Unchanged Attached File: " + xAttachedFileDestPath);
 #endif
+                                    xHandledAttachedFiles.Add (new iAttachedFileManager (xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile));
                                     break;
                                 }
                             }
@@ -156,12 +156,18 @@ namespace tk2Text
                             nDirectory.CreateForFile (xAttachedFileDestPath);
                             xAttachedFile.File.CopyTo (xAttachedFileDestPath, true);
                             nFile.SetLastWriteUtc (xAttachedFileDestPath, xAttachedFile.ModifiedAtUtc);
+
+                            iAttachedFileManager xManager = new iAttachedFileManager (xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile);
+
+                            if (xManager.IsImage && xManager.IsOptimized)
+                                xManager.Resize ();
 #if DEBUG
                             if (xFileExisted == false)
                                 Console.WriteLine ("Created Attached File: " + xAttachedFileDestPath);
 
                             else Console.WriteLine ("Updated Attached File: " + xAttachedFileDestPath);
 #endif
+                            xHandledAttachedFiles.Add (xManager);
                             break;
                         }
 
@@ -174,11 +180,6 @@ namespace tk2Text
                             result = default;
                             return false;
                         }
-
-                        finally
-                        {
-                            xHandledAttachedFiles.Add ((xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile));
-                        }
                     }
                 }
             }
@@ -186,7 +187,8 @@ namespace tk2Text
             if (nDirectory.Exists (MergedTaskList.Attributes.AttachedFileDirectoryPath))
             {
                 string [] xUnhandledAttachedFilePaths = Directory.GetFiles (MergedTaskList.Attributes.AttachedFileDirectoryPath, "*.*", SearchOption.AllDirectories).
-                    Where (x => xHandledAttachedFiles.All (y => string.Equals (y.DestFilePath, x, StringComparison.OrdinalIgnoreCase) == false)).
+                    Where (x => xHandledAttachedFiles.All (y => string.Equals (y.DestFilePath, x, StringComparison.OrdinalIgnoreCase) == false &&
+                        string.Equals (y.OptimizedImageFilePath, x, StringComparison.OrdinalIgnoreCase) == false)). // 原版と縮小版の両方とパスが不一致
                     ToArray (); // LINQ が複数回処理されるのを回避
 
                 if (xUnhandledAttachedFilePaths.Length > 0)
@@ -263,7 +265,21 @@ namespace tk2Text
                     {
                         xBuilder.OpenTag ("div", new [] { "class", "file" });
 
-                        // todo
+                        if (xAttachedFile.IsImage == false)
+                            xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!), "target", "_blank", "class", "file" }, WebUtility.HtmlEncode (xAttachedFile.File.File.Name));
+
+                        else
+                        {
+                            if (xAttachedFile.IsOptimized == false)
+                                xBuilder.AddTag ("img", new [] { "src", WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!), "class", "image" });
+
+                            else
+                            {
+                                xBuilder.OpenTag ("a", new [] { "href", WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath), "target", "_blank", "class", "image" });
+                                xBuilder.AddTag ("img", new [] { "src", WebUtility.HtmlEncode (xAttachedFile.OptimizedImageRelativeFilePath!), "class", "image" });
+                                xBuilder.CloseTag (); // a.image
+                            }
+                        }
 
                         xBuilder.CloseTag (); // div.file
                     }
