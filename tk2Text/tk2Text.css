@@ -21,7 +21,7 @@ a:hover, a:active, a:focus
     font-weight: bold;
 }
 
-div.task, div.note, div.file
+div.task, div.note, div.file, div.image
 {
     margin: 10px;
     border: 1px solid #CCC;
@@ -86,12 +86,12 @@ div.canceled:hover
     color: white;
 }
 
-div.task > div.contents
+div.task_contents
 {
     margin: 10px 15px;
 }
 
-div.task span.contents
+span.task_contents
 {
     font-weight: bold;
 }
@@ -116,13 +116,17 @@ div.note
     color: black;
 }
 
-div.note > div.contents
+div.note_contents
 {
 }
 
-div.note p
+p.note_contents
 {
     margin: 15px 20px;
+}
+
+a.url
+{
 }
 
 div.files
@@ -132,13 +136,19 @@ div.files
 div.file
 {
     background-color: white;
+    padding: 15px 20px;
     color: black;
 }
 
 a.file
 {
-    display: inline-block;
-    margin: 15px 20px;
+}
+
+div.image
+{
+    background-color: white;
+    padding: 10px;
+    color: black;
 }
 
 a.image
@@ -147,9 +157,7 @@ a.image
 
 img.image
 {
-    display: inline-block;
     box-sizing: border-box;
-    padding: 10px;
     vertical-align: top;
     max-width: 100%;
 }

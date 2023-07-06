@@ -66,7 +66,8 @@ namespace tk2Text
                     xMailToPart = xIsEmailAddress ? "mailto:" : string.Empty,
                     xTargetPart = xIsEmailAddress ? string.Empty : " target=\"_blank\"";
 
-                xBuilder.Append ($"<a href=\"{xMailToPart}{xEncodedValue}\"{xTargetPart}>{xEncodedValue}</a>");
+                // クラス名を短く
+                xBuilder.Append ($"<a href=\"{xMailToPart}{xEncodedValue}\"{xTargetPart} class=\"url\">{xEncodedValue}</a>");
 
                 xProcessedLength = xMatch.Index + xMatch.Length;
             }
@@ -84,7 +85,7 @@ namespace tk2Text
 
             return string.Concat (xBuilder.ToString ().nSplitIntoParagraphs ().Select (x =>
             {
-                return xIndentationString + "<p>" +
+                return xIndentationString + "<p class=\"note_contents\">" +
                     string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}", x.nSplitIntoLines ().Select (x => iShared.ReplaceIndentationChars (x))) +
                     "</p>" + Environment.NewLine;
             }));
@@ -248,13 +249,13 @@ namespace tk2Text
             xBuilder.AddTag ("title", safeValue: WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
             xBuilder.AddTag ("meta", new [] { "name", "viewport", "content", "width=device-width, initial-scale=1" });
             xBuilder.AddTag ("link", new [] { "href", "tk2Text.css", "rel", "stylesheet" });
-            xBuilder.CloseTag (); // head
+            xBuilder.CloseTag ();
 
             xBuilder.OpenTag ("body");
 
             xBuilder.OpenTag ("div", new [] { "class", "title" });
             xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (MergedTaskList.Attributes.DestFileName), "class", "title" }, WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
-            xBuilder.CloseTag (); // div.title
+            xBuilder.CloseTag ();
 
             void iAddAttachedFilesPart (Guid? parentGuid)
             {
@@ -266,13 +267,17 @@ namespace tk2Text
 
                     foreach (var xAttachedFile in xAttachedFiles.OrderBy (x => x.File.AttachedAtUtc))
                     {
-                        xBuilder.OpenTag ("div", new [] { "class", "file" });
-
                         if (xAttachedFile.IsImage == false)
+                        {
+                            xBuilder.OpenTag ("div", new [] { "class", "file" });
                             xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (iShared.ToUnixDirectorySeparators (xAttachedFile.DestRelativeFilePath!)), "target", "_blank", "class", "file" }, WebUtility.HtmlEncode (xAttachedFile.File.File.Name));
+                            xBuilder.CloseTag ();
+                        }
 
                         else
                         {
+                            xBuilder.OpenTag ("div", new [] { "class", "image" });
+
                             if (xAttachedFile.IsOptimized == false)
                                 xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!)), "class", "image" });
 
@@ -280,14 +285,14 @@ namespace tk2Text
                             {
                                 xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath)), "target", "_blank", "class", "image" });
                                 xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.OptimizedImageRelativeFilePath!)), "class", "image" });
-                                xBuilder.CloseTag (); // a.image
+                                xBuilder.CloseTag ();
                             }
-                        }
 
-                        xBuilder.CloseTag (); // div.file
+                            xBuilder.CloseTag ();
+                        }
                     }
 
-                    xBuilder.CloseTag (); // div.files
+                    xBuilder.CloseTag ();
                 }
             }
 
@@ -314,15 +319,15 @@ namespace tk2Text
                 {
                     xBuilder.OpenTag ("div", new [] { "class", "note" });
 
-                    xBuilder.OpenTag ("div", new [] { "class", "contents" });
+                    xBuilder.OpenTag ("div", new [] { "class", "note_contents" });
 
                     xBuilder.Append (iHtmlEncode (note.Contents!, false, xBuilder.IndentationWidth));
 
-                    xBuilder.CloseTag (); // div.contents
+                    xBuilder.CloseTag ();
 
                     iAddAttachedFilesPart (note.Guid);
 
-                    xBuilder.CloseTag (); // div.note
+                    xBuilder.CloseTag ();
                 }
 
                 if (xEntry.GetType () == typeof (TaskInfo))
@@ -350,7 +355,7 @@ namespace tk2Text
                         return $"{Environment.NewLine}{iHtmlStringBuilder.IndentationString.AsSpan (0, indentationWidth)}";
                     }
 
-                    xBuilder.AddTag ("div", new [] { "class", "contents" }, $"{xFirstPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}<span class=\"contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span>{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}{xLastPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth)}");
+                    xBuilder.AddTag ("div", new [] { "class", "task_contents" }, $"{xFirstPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}<span class=\"task_contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span>{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}{xLastPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth)}");
 
                     iAddAttachedFilesPart (xTask.Guid);
 
@@ -361,21 +366,21 @@ namespace tk2Text
                         foreach (NoteInfo xNote in xTask.Notes.OrderBy (x => x.CreationUtc))
                             iAddNotePart (xNote);
 
-                        xBuilder.CloseTag (); // div.notes
+                        xBuilder.CloseTag ();
                     }
 
-                    xBuilder.CloseTag (); // div.task
+                    xBuilder.CloseTag ();
                 }
 
                 else if (xEntry.GetType () == typeof (NoteInfo))
                     iAddNotePart ((NoteInfo) xEntry);
             }
 
-            xBuilder.CloseTag (); // div.entries
+            xBuilder.CloseTag ();
 
-            xBuilder.CloseTag (); // body
+            xBuilder.CloseTag ();
 
-            xBuilder.CloseTag (); // html
+            xBuilder.CloseTag ();
 
             // =============================================================================
             //     ファイルを読み書き
