@@ -8,6 +8,13 @@ tkView/bin/Release/net6.0-windows > Compiled/tkView
 // 通常、.pdb ファイルを残すが、このプロジェクトはメインストリームでないため不要
 
 [Delete]
+Compiled/tk2Text/runtimes/linux-arm64/
+Compiled/tk2Text/runtimes/linux-musl-x64/
+Compiled/tk2Text/runtimes/linux-x64/
+Compiled/tk2Text/runtimes/osx-arm64/
+Compiled/tk2Text/runtimes/osx-x64/
+Compiled/tk2Text/runtimes/win-arm64/
+Compiled/tk2Text/runtimes/win-x86/
 Compiled/tk2Text/BouncyCastle.Crypto.dll
 Compiled/tk2Text/BouncyCastle.Crypto.xml
 Compiled/tk2Text/BouncyCastle.Cryptography.dll

@@ -93,7 +93,6 @@ div.task > div.contents
 
 div.task span.contents
 {
-    margin: auto 10px;
     font-weight: bold;
 }
 
@@ -138,18 +137,19 @@ div.file
 
 a.file
 {
-    display: block;
+    display: inline-block;
     margin: 15px 20px;
 }
 
 a.image
 {
-    margin: 15px;
 }
 
 img.image
 {
-    display: block;
+    display: inline-block;
     box-sizing: border-box;
+    padding: 10px;
+    vertical-align: top;
     max-width: 100%;
 }

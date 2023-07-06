@@ -85,7 +85,7 @@ namespace tk2Text
             return string.Concat (xBuilder.ToString ().nSplitIntoParagraphs ().Select (x =>
             {
                 return xIndentationString + "<p>" +
-                    string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}", x.nSplitIntoLines ()) +
+                    string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}", x.nSplitIntoLines ().Select (x => iShared.ReplaceIndentationChars (x))) +
                     "</p>" + Environment.NewLine;
             }));
         }
@@ -102,6 +102,8 @@ namespace tk2Text
             // ページを見る人の分かりやすさのために同じファイルや画像を複数のタスクやメモに表示する運用は今のところ考えにくい
 
             List <iAttachedFileManager> xHandledAttachedFiles = new List <iAttachedFileManager> ();
+
+            // ここでソートするのは、ファイル名が衝突したら連番が入る仕組みにおいて、できるだけパスの同一性が保たれるようにするため
 
             foreach (iAttachedFileInfo xAttachedFile in MergedTaskList.AttachedFiles.OrderBy (x => x.AttachedAtUtc))
             {
@@ -189,6 +191,7 @@ namespace tk2Text
                 string [] xUnhandledAttachedFilePaths = Directory.GetFiles (MergedTaskList.Attributes.AttachedFileDirectoryPath, "*.*", SearchOption.AllDirectories).
                     Where (x => xHandledAttachedFiles.All (y => string.Equals (y.DestFilePath, x, StringComparison.OrdinalIgnoreCase) == false &&
                         string.Equals (y.OptimizedImageFilePath, x, StringComparison.OrdinalIgnoreCase) == false)). // 原版と縮小版の両方とパスが不一致
+                    OrderBy (z => z, StringComparer.OrdinalIgnoreCase). // 一応、ファイルパスでソート
                     ToArray (); // LINQ が複数回処理されるのを回避
 
                 if (xUnhandledAttachedFilePaths.Length > 0)
@@ -261,22 +264,22 @@ namespace tk2Text
                 {
                     xBuilder.OpenTag ("div", new [] { "class", "files" });
 
-                    foreach (var xAttachedFile in xAttachedFiles)
+                    foreach (var xAttachedFile in xAttachedFiles.OrderBy (x => x.File.AttachedAtUtc))
                     {
                         xBuilder.OpenTag ("div", new [] { "class", "file" });
 
                         if (xAttachedFile.IsImage == false)
-                            xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!), "target", "_blank", "class", "file" }, WebUtility.HtmlEncode (xAttachedFile.File.File.Name));
+                            xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (iShared.ToUnixDirectorySeparators (xAttachedFile.DestRelativeFilePath!)), "target", "_blank", "class", "file" }, WebUtility.HtmlEncode (xAttachedFile.File.File.Name));
 
                         else
                         {
                             if (xAttachedFile.IsOptimized == false)
-                                xBuilder.AddTag ("img", new [] { "src", WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!), "class", "image" });
+                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!)), "class", "image" });
 
                             else
                             {
-                                xBuilder.OpenTag ("a", new [] { "href", WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath), "target", "_blank", "class", "image" });
-                                xBuilder.AddTag ("img", new [] { "src", WebUtility.HtmlEncode (xAttachedFile.OptimizedImageRelativeFilePath!), "class", "image" });
+                                xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath)), "target", "_blank", "class", "image" });
+                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.OptimizedImageRelativeFilePath!)), "class", "image" });
                                 xBuilder.CloseTag (); // a.image
                             }
                         }
@@ -338,7 +341,16 @@ namespace tk2Text
                     // <b>: The Bring Attention To element - HTML: HyperText Markup Language | MDN
                     // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/b
 
-                    xBuilder.AddTag ("div", new [] { "class", "contents" }, $"{xFirstPart}<span class=\"contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span>{xLastPart}");
+                    // 単一行として出力するつもりだったものにあとから改行とインデントを入れた
+                    // span 部分以外は不変なので diff を取るなどにおいて不都合はそれほどないが、
+                    //     HTML をザッと見るにおいてここだけ1行1要素になっていなかったので作法として直した
+
+                    static string iGetNewLineAndIndentationString (int indentationWidth)
+                    {
+                        return $"{Environment.NewLine}{iHtmlStringBuilder.IndentationString.AsSpan (0, indentationWidth)}";
+                    }
+
+                    xBuilder.AddTag ("div", new [] { "class", "contents" }, $"{xFirstPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}<span class=\"contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span>{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}{xLastPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth)}");
 
                     iAddAttachedFilesPart (xTask.Guid);
 
@@ -346,7 +358,7 @@ namespace tk2Text
                     {
                         xBuilder.OpenTag ("div", new [] { "class", "notes" });
 
-                        foreach (NoteInfo xNote in xTask.Notes)
+                        foreach (NoteInfo xNote in xTask.Notes.OrderBy (x => x.CreationUtc))
                             iAddNotePart (xNote);
 
                         xBuilder.CloseTag (); // div.notes
