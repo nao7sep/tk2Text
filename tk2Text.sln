@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tk2Text", "tk2Text\tk2Text.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tk2TextShared", "tk2TextShared\tk2TextShared.csproj", "{688C1D8F-1124-4A4A-B2EE-25C9B1EA1229}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tkView", "tkView\tkView.csproj", "{5AEE277F-788D-46FA-B924-DABD6943B483}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tkView", "tkView\tkView.csproj", "{5AEE277F-788D-46FA-B924-DABD6943B483}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

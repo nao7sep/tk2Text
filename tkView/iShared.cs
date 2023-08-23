@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace tkView
 {
@@ -71,6 +72,70 @@ namespace tkView
         public static void HandleException (Window owner, Exception exception)
         {
             MessageBox.Show (owner, $"エラーが発生しました:{Environment.NewLine}{Environment.NewLine}{exception}");
+        }
+
+        private static TextFormattingMode? mTextFormattingMode = null;
+
+        public static TextFormattingMode TextFormattingMode
+        {
+            get
+            {
+                if (mTextFormattingMode == null)
+                {
+                    if (Enum.TryParse (ConfigurationManager.AppSettings ["TextFormattingMode"], out TextFormattingMode xResult))
+                        mTextFormattingMode = xResult;
+
+                    // return new TextFormatterImp(soleContext, TextFormattingMode.Ideal) というコードがある
+                    // ほかに決め打ちになっているところはないようなので、Ideal をデフォルト値とみなす
+
+                    // TextFormatter.cs
+                    // https://source.dot.net/#PresentationCore/System/Windows/Media/textformatting/TextFormatter.cs
+
+                    // プログラム起動時の値がこうなっていることも確認した
+
+                    else mTextFormattingMode = TextFormattingMode.Ideal;
+                }
+
+                return mTextFormattingMode.Value;
+            }
+        }
+
+        private static TextHintingMode? mTextHintingMode = null;
+
+        public static TextHintingMode TextHintingMode
+        {
+            get
+            {
+                if (mTextHintingMode == null)
+                {
+                    if (Enum.TryParse (ConfigurationManager.AppSettings ["TextHintingMode"], out TextHintingMode xResult))
+                        mTextHintingMode = xResult;
+
+                    // プログラム起動時の値がこうなっていることを確認した
+                    else mTextHintingMode = TextHintingMode.Auto;
+                }
+
+                return mTextHintingMode.Value;
+            }
+        }
+
+        private static TextRenderingMode? mTextRenderingMode = null;
+
+        public static TextRenderingMode TextRenderingMode
+        {
+            get
+            {
+                if (mTextRenderingMode == null)
+                {
+                    if (Enum.TryParse (ConfigurationManager.AppSettings ["TextRenderingMode"], out TextRenderingMode xResult))
+                        mTextRenderingMode = xResult;
+
+                    // プログラム起動時の値がこうなっていることを確認した
+                    else mTextRenderingMode = TextRenderingMode.Auto;
+                }
+
+                return mTextRenderingMode.Value;
+            }
         }
     }
 }

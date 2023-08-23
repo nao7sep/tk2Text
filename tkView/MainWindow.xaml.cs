@@ -170,7 +170,11 @@ namespace tkView
 
                 Stopwatch xStopwatch = Stopwatch.StartNew ();
 
-                if (reloadsParametersToo)
+                // null だと初期化される taskKillerDirectoryPaths でなく、m* の方で、「以前あったが、もうないディレクトリー」を探す
+                // ディレクトリーが減っていれば、ログの from * lists の部分のことなども考え、ディレクトリーのリストを更新
+
+                if (reloadsParametersToo ||
+                        (mTaskKillerDirectoryPaths != null && mTaskKillerDirectoryPaths.Any (x => Directory.Exists (x) == false)))
                     mTaskKillerDirectoryPaths = null;
 
                 List <TaskInfo> xAllTasks = new List <TaskInfo> ();
@@ -333,6 +337,10 @@ namespace tkView
 
                 if ("True".Equals (ConfigurationManager.AppSettings ["IsMaximized"], StringComparison.OrdinalIgnoreCase))
                     WindowState = WindowState.Maximized;
+
+                TextOptions.SetTextFormattingMode (this, iShared.TextFormattingMode);
+                TextOptions.SetTextHintingMode (this, iShared.TextHintingMode);
+                TextOptions.SetTextRenderingMode (this, iShared.TextRenderingMode);
 
                 string? xFontFamily = ConfigurationManager.AppSettings ["FontFamily"];
 

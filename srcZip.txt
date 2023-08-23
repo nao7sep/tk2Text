@@ -21,7 +21,6 @@ Compiled/tk2Text/BouncyCastle.Cryptography.dll
 Compiled/tk2Text/BouncyCastle.Cryptography.xml
 Compiled/tk2Text/Magick.NET-Q8-AnyCPU.dll
 Compiled/tk2Text/Magick.NET-Q8-AnyCPU.xml
-Compiled/tk2Text/Magick.NET.Core.dll
 Compiled/tk2Text/Magick.NET.Core.xml
 Compiled/tk2Text/MailKit.dll
 Compiled/tk2Text/MailKit.dll.config
