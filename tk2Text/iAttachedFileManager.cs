@@ -65,6 +65,11 @@ namespace tk2Text
                 // photoPage のパラメーターを拝借
                 // 縮小版からバッキバキの画質でないといけないシステムでない
 
+                // 元の画像が小さければ拡大される
+                // PNG のときに影響を受けないため、大きな影響はない
+                // 小さければそのままという仕様もアリだが、ファイルサイズがどこかにキャッシュされるわけでないため、
+                //     コンストラクターでの IsOptimized の値の決定が累積的には大きなコストになる
+
                 xImage.Format = MagickFormat.Jpeg;
                 xImage.Quality = 75;
                 xImage.AutoOrient ();

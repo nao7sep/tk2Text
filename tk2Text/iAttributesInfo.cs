@@ -52,7 +52,7 @@ namespace tk2Text
             SourceDirectoryPath = sourceDirectoryPath;
             CategoryName = categoryName;
             DestDirectoryPath = destDirectoryPath;
-            AttachedFileDirectoryRelativePath = attachedFileDirectoryRelativePath;
+            AttachedFileDirectoryRelativePath = iShared.ToWindowsDirectorySeparators (attachedFileDirectoryRelativePath);
             DestFileName = destFileName;
             Title = title;
         }

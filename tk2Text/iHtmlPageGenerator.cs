@@ -102,11 +102,35 @@ namespace tk2Text
             // 実装がややこしくなるし、たいてい作業ミスだろうから、同じファイルが複数回添付されている場合に対処しない
             // ページを見る人の分かりやすさのために同じファイルや画像を複数のタスクやメモに表示する運用は今のところ考えにくい
 
+            var xAllMemoTaskGuids = MergedTaskList.AllMemoNotes.Select (x => x.ParentTask!.Guid).Distinct ();
+            var xFilesAttachedToMemoTasks = MergedTaskList.AttachedFiles.Where (x => x.ParentGuid != null && xAllMemoTaskGuids.Contains (x.ParentGuid.Value)).ToArray ();
+
+            if (xFilesAttachedToMemoTasks.Length > 0)
+            {
+                xErrorMessages.AddRange (xFilesAttachedToMemoTasks.Select (x => $"「メモ」タスクにファイルが添付されています: {x.File.FullName}"));
+
+                // そのままページを生成しても処理において特に問題がないが、
+                //     すぐに対処してもらわないとユーザーが忘れうるので、いったん打ち切る
+
+                result = default;
+                return false;
+            }
+
             List <iAttachedFileManager> xHandledAttachedFiles = new List <iAttachedFileManager> ();
 
+            // 追記: 派生開発により少し無駄のあるコードになったが、未処理のタスクやメモに添付されているファイルが出力先にコピーされないようにした
+            // あとで読もうと添付した PDF ファイルが、タスクの方がまだなのに出力先に全てコピーされるのは、データの不整合にほかならない
+
+            List <Guid> xAllHandledParentGuids = new List <Guid> ();
+            var xAllHandledTasks = MergedTaskList.AllButMemoTasks.Where (x => x.State == TaskState.Done || x.State == TaskState.Cancelled);
+            xAllHandledParentGuids.AddRange (xAllHandledTasks.Select (y => y.Guid));
+            xAllHandledParentGuids.AddRange (xAllHandledTasks.SelectMany (x => x.Notes).Select (y => y.Guid));
+            xAllHandledParentGuids.AddRange (MergedTaskList.AllMemoNotes.Where (x => x.ParentTask!.State == TaskState.Done || x.ParentTask!.State == TaskState.Cancelled).Select (y => y.Guid));
+
+            // タスクリストそのものに添付されているファイルは、ParentGuid が null になる
             // ここでソートするのは、ファイル名が衝突したら連番が入る仕組みにおいて、できるだけパスの同一性が保たれるようにするため
 
-            foreach (iAttachedFileInfo xAttachedFile in MergedTaskList.AttachedFiles.OrderBy (x => x.AttachedAtUtc))
+            foreach (iAttachedFileInfo xAttachedFile in MergedTaskList.AttachedFiles.Where (x => x.ParentGuid == null || xAllHandledParentGuids.Contains (x.ParentGuid.Value)).OrderBy (y => y.AttachedAtUtc))
             {
                 for (int temp = 0; ; temp ++)
                 {
@@ -199,7 +223,7 @@ namespace tk2Text
                 {
                     xErrorMessages.AddRange (xUnhandledAttachedFilePaths.Select (x => $"古い添付ファイルが残っています: {x}"));
 
-                    // こちらは、そのままページを生成しても処理において特に問題がないが、
+                    // そのままページを生成しても処理において特に問題がないが、
                     //     すぐに対処してもらわないとユーザーが忘れうるので、いったん打ち切る
 
                     result = default;
@@ -315,13 +339,16 @@ namespace tk2Text
 
             foreach (object xEntry in xEntries.OrderBy (x => x.Utc).Select (y => y.Entry))
             {
-                void iAddNotePart (NoteInfo note)
+                void iAddNotePart (NoteInfo note, bool writesGuid)
                 {
                     xBuilder.OpenTag ("div", new [] { "class", "note" });
 
                     xBuilder.OpenTag ("div", new [] { "class", "note_contents" });
 
                     xBuilder.Append (iHtmlEncode (note.Contents!, false, xBuilder.IndentationWidth));
+
+                    if (writesGuid)
+                        xBuilder.Append ($"{iHtmlStringBuilder.IndentationString.AsSpan (0, xBuilder.IndentationWidth)}<!-- Task: {note.ParentTask!.Guid.ToString ("D")} -->{Environment.NewLine}");
 
                     xBuilder.CloseTag ();
 
@@ -364,7 +391,7 @@ namespace tk2Text
                         xBuilder.OpenTag ("div", new [] { "class", "notes" });
 
                         foreach (NoteInfo xNote in xTask.Notes.OrderBy (x => x.CreationUtc))
-                            iAddNotePart (xNote);
+                            iAddNotePart (xNote, writesGuid: false);
 
                         xBuilder.CloseTag ();
                     }
@@ -373,7 +400,7 @@ namespace tk2Text
                 }
 
                 else if (xEntry.GetType () == typeof (NoteInfo))
-                    iAddNotePart ((NoteInfo) xEntry);
+                    iAddNotePart ((NoteInfo) xEntry, writesGuid: true);
             }
 
             xBuilder.CloseTag ();

@@ -17,6 +17,11 @@ namespace tk2Text
             return path.Replace ('\\', '/');
         }
 
+        public static string ToWindowsDirectorySeparators (string path)
+        {
+            return path.Replace ('/', '\\');
+        }
+
         public static readonly string HalfWidthSpaceReplacementString = "&nbsp;";
 
         public static readonly string TabReplacementString = "&nbsp;&nbsp;&nbsp;&nbsp;";
