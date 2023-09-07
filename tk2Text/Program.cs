@@ -29,6 +29,11 @@ namespace tk2Text
                 {
                     iParametersStringParser xParser = new iParametersStringParser (xParagraph);
 
+                    // コメント行だけの段落がエラーにならないように
+
+                    if (xParser.IsEmpty)
+                        continue;
+
                     if (xParser.ErrorMessages.Any ())
                     {
                         ConsoleAlt.WriteErrorLine (string.Join (Environment.NewLine, xParser.ErrorMessages));

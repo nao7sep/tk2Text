@@ -28,6 +28,15 @@ namespace tk2Text
 
         public readonly IEnumerable <string> ErrorMessages;
 
+        public bool IsEmpty
+        {
+            get
+            {
+                return (IncludedPaths.Any () || ExcludedPaths.Any () || MergedPaths.Any () ||
+                    CategoryNames.Any () || Attributes.Any () || ExcludedItems.Any () || ErrorMessages.Any ()) == false;
+            }
+        }
+
         public iParametersStringParser (string originalString)
         {
             OriginalString = originalString;
