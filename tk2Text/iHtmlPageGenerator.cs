@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Markdig;
 using Nekote;
 
 namespace tk2Text
@@ -31,62 +32,104 @@ namespace tk2Text
 
         private static string iHtmlEncode (string value, bool isTask, int? indentationWidth)
         {
-            // ChatGPT に聞いた正規表現
-            // 詳細については taskKiller のログの方に
-
-            // regex という識別子一つで「パターン」のニュアンスも含みそうだが、
-            //     regex だけでは「正規表現の」と形容詞的なところもあるのでこのまま
-
-            const string
-                xEmailAddressRegexPattern = @"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}",
-                xUrlRegexPattern = @"(?:https?://|www\.)\S+",
-                xSinglePattern = $"(?<EmailAddress>{xEmailAddressRegexPattern})|(?<Url>{xUrlRegexPattern})";
-
-            StringBuilder xBuilder = new StringBuilder ();
-
-            int xProcessedLength = 0;
-
-            foreach (Match xMatch in Regex.Matches (value, xSinglePattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase).Cast <Match> ())
+            static string iHandleEmailAddressesAndUrls (string value)
             {
-                xBuilder.Append (WebUtility.HtmlEncode (value.Substring (xProcessedLength, xMatch.Index - xProcessedLength)));
+                // ChatGPT に聞いた正規表現
+                // 詳細については taskKiller のログの方に
 
-                // Group Class (System.Text.RegularExpressions) | Microsoft Learn
-                // https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.group
+                // regex という識別子一つで「パターン」のニュアンスも含みそうだが、
+                //     regex だけでは「正規表現の」と形容詞的なところもあるのでこのまま
 
-                // Group.Success Property (System.Text.RegularExpressions) | Microsoft Learn
-                // https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.group.success
+                const string
+                    xEmailAddressRegexPattern = @"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}",
+                    xUrlRegexPattern = @"(?:https?://|www\.)\S+",
+                    xSinglePattern = $"(?<EmailAddress>{xEmailAddressRegexPattern})|(?<Url>{xUrlRegexPattern})";
 
-                bool xIsEmailAddress = xMatch.Groups ["EmailAddress"].Success;
+                StringBuilder xBuilder = new StringBuilder ();
 
-                // taskKiller のメモはブラウザーからのコピペなので、この時点で URL エンコードはできている
-                // 試しに、さらに URL エンコードをやってみたところ :// の部分などまでエンコードされ、表示が乱れ、リンクも機能しなかった
-                // 一応 HTML エンコードを行うのは、クエリー文字列などに & などが含まれていてもそのまま出力されないための作法
+                int xProcessedLength = 0;
 
-                string xEncodedValue = WebUtility.HtmlEncode (xMatch.Value),
-                    xMailToPart = xIsEmailAddress ? "mailto:" : string.Empty,
-                    xTargetPart = xIsEmailAddress ? string.Empty : " target=\"_blank\"";
+                foreach (Match xMatch in Regex.Matches (value, xSinglePattern, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase).Cast <Match> ())
+                {
+                    xBuilder.Append (WebUtility.HtmlEncode (value.Substring (xProcessedLength, xMatch.Index - xProcessedLength)));
 
-                // クラス名を短く
-                xBuilder.Append ($"<a href=\"{xMailToPart}{xEncodedValue}\"{xTargetPart} class=\"url\">{xEncodedValue}</a>");
+                    // Group Class (System.Text.RegularExpressions) | Microsoft Learn
+                    // https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.group
 
-                xProcessedLength = xMatch.Index + xMatch.Length;
+                    // Group.Success Property (System.Text.RegularExpressions) | Microsoft Learn
+                    // https://learn.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.group.success
+
+                    bool xIsEmailAddress = xMatch.Groups ["EmailAddress"].Success;
+
+                    // taskKiller のメモはブラウザーからのコピペなので、この時点で URL エンコードはできている
+                    // 試しに、さらに URL エンコードをやってみたところ :// の部分などまでエンコードされ、表示が乱れ、リンクも機能しなかった
+                    // 一応 HTML エンコードを行うのは、クエリー文字列などに & などが含まれていてもそのまま出力されないための作法
+
+                    string xEncodedValue = WebUtility.HtmlEncode (xMatch.Value),
+                        xMailToPart = xIsEmailAddress ? "mailto:" : string.Empty,
+                        xTargetPart = xIsEmailAddress ? string.Empty : " target=\"_blank\"";
+
+                    // クラス名を短く
+                    xBuilder.Append ($"<a href=\"{xMailToPart}{xEncodedValue}\"{xTargetPart} class=\"url\">{xEncodedValue}</a>");
+
+                    xProcessedLength = xMatch.Index + xMatch.Length;
+                }
+
+                if (value.Length > xProcessedLength)
+                    xBuilder.Append (WebUtility.HtmlEncode (value.Substring (xProcessedLength)));
+
+                return xBuilder.ToString ();
             }
-
-            if (value.Length > xProcessedLength)
-                xBuilder.Append (WebUtility.HtmlEncode (value.Substring (xProcessedLength)));
 
             // タスクなら、<p> に入れず、インデントもつけずに返す
 
             if (isTask)
-                return xBuilder.ToString ();
+                return iHandleEmailAddressesAndUrls (value);
+
+            // メモなら、段落分けし、各段落の先頭や末尾の @ を検出し、AI の回答の引用の部分を検出し、そうでない部分と区別して処理
+
+            string [] xParagraphs = value.nSplitIntoParagraphs ();
+            List <(bool IsAiGenerated, string Value)> xParts = new List <(bool IsAiGenerated, string Value)> ();
+
+            for (int temp = 0; temp < xParagraphs.Length; temp ++)
+            {
+                if (xParagraphs [temp].StartsWith ("@") == false)
+                    xParts.Add ((false, xParagraphs [temp]));
+
+                else
+                {
+                    int xEndOfAiGeneratedPart = -1;
+
+                    for (int tempAlt = temp + 1; tempAlt < xParagraphs.Length; tempAlt ++)
+                    {
+                        if (xParagraphs [tempAlt].EndsWith ("@"))
+                        {
+                            xEndOfAiGeneratedPart = tempAlt;
+                            break;
+                        }
+                    }
+
+                    if (xEndOfAiGeneratedPart < 0)
+                        xEndOfAiGeneratedPart = xParagraphs.Length - 1;
+
+                    xParts.Add ((true, string.Join (Environment.NewLine + Environment.NewLine, xParagraphs [temp .. (xEndOfAiGeneratedPart + 1)]).Trim ('@', '\x20')));
+                    temp = xEndOfAiGeneratedPart; // 直後に ++ されるので +1 は不要
+                }
+            }
 
             string xIndentationString = iHtmlStringBuilder.IndentationString.Substring (0, indentationWidth!.Value),
                 xWiderIndentationString = iHtmlStringBuilder.IndentationString.Substring (0, indentationWidth!.Value + 4);
 
-            return string.Concat (xBuilder.ToString ().nSplitIntoParagraphs ().Select (x =>
+            return string.Concat (xParts.Select (x =>
             {
-                return xIndentationString + "<p class=\"note_contents\">" +
-                    string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}", x.nSplitIntoLines ().Select (x => iShared.ReplaceIndentationChars (x))) +
+                if (x.IsAiGenerated)
+                    return xIndentationString + "<div class=\"note_ai_generated\">" + Environment.NewLine +
+                        Markdown.ToHtml (x.Value).TrimEnd () + Environment.NewLine +
+                        xIndentationString + "</div>" + Environment.NewLine;
+
+                else return xIndentationString + "<p class=\"note_contents\">" +
+                    string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}",
+                    iHandleEmailAddressesAndUrls (x.Value).nSplitIntoLines ().Select (y => iShared.ReplaceIndentationChars (y))) +
                     "</p>" + Environment.NewLine;
             }));
         }
@@ -232,10 +275,10 @@ namespace tk2Text
             }
 
             // =============================================================================
-            //     CSS ファイルをコピー
+            //     CSS ファイルをコピー → 不要
             // =============================================================================
 
-            const string xCssFileName = "tk2Text.css";
+            /* const string xCssFileName = "tk2Text.css";
 
             FileInfo xSourceCssFile = new FileInfo (nPath.Combine (iShared.AppDirectoryPath, xCssFileName)),
                 xDestCssFile = new FileInfo (nPath.Combine (MergedTaskList.Attributes.DestDirectoryPath, xCssFileName));
@@ -257,7 +300,7 @@ namespace tk2Text
 #if DEBUG
                 Console.WriteLine ("Unchanged CSS File: " + xDestCssFile.FullName);
 #endif
-            }
+            } */
 
             // =============================================================================
             //     HTML を生成
@@ -272,7 +315,7 @@ namespace tk2Text
             xBuilder.OpenTag ("head");
             xBuilder.AddTag ("title", safeValue: WebUtility.HtmlEncode (MergedTaskList.Attributes.Title));
             xBuilder.AddTag ("meta", new [] { "name", "viewport", "content", "width=device-width, initial-scale=1" });
-            xBuilder.AddTag ("link", new [] { "href", "tk2Text.css", "rel", "stylesheet" });
+            xBuilder.AddTag ("style", safeValue: iShared.MinifiedCssString);
             xBuilder.CloseTag ();
 
             xBuilder.OpenTag ("body");

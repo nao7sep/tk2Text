@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Nekote;
+using NUglify;
 
 namespace tk2Text
 {
@@ -62,6 +63,19 @@ namespace tk2Text
             }
 
             return value;
+        }
+
+        private static string? mMinifiedCssString = null;
+
+        public static string MinifiedCssString
+        {
+            get
+            {
+                if (mMinifiedCssString == null)
+                    mMinifiedCssString = Uglify.Css (nFile.ReadAllText (nPath.Combine (AppDirectoryPath, "tk2Text.css"))).Code;
+
+                return mMinifiedCssString;
+            }
         }
     }
 }

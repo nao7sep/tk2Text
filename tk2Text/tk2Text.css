@@ -3,7 +3,9 @@
 body
 {
     margin: 0;
-    font-family: 'IBM Plex Mono', 'IBM Plex Sans JP', sans-serif;
+    background-color: #111;
+    color: #ddd;
+    font-family: 'IBM Plex Sans JP', sans-serif;
     font-size: 1rem;
     line-height: 1.5;
     overflow-wrap: break-word;
@@ -12,7 +14,7 @@ body
 
 a
 {
-    color: blue;
+    color: #69c;
     text-decoration: underline;
 }
 
@@ -24,13 +26,17 @@ a:hover, a:active, a:focus
 div.task, div.note, div.file, div.image
 {
     margin: 10px;
-    border: 1px solid #CCC;
-    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+div.entries > div.note
+{
+    border: 1px solid #333;
 }
 
 div.title
 {
-    background-color: blueviolet;
+    background-color: #333;
     padding: 20px 30px;
     font-size: 2rem;
     font-weight: bold;
@@ -47,7 +53,7 @@ div.title
 
 a.title
 {
-    color: white;
+    color: #ddd;
     text-decoration: none;
 }
 
@@ -66,24 +72,22 @@ div.task
 
 div.done
 {
-    background-color: #EEF;
+    background-color: #115;
 }
 
 div.done:hover
 {
-    background-color: deepskyblue;
-    color: white;
+    background-color: #337;
 }
 
 div.canceled
 {
-    background-color: #FEE;
+    background-color: #511;
 }
 
 div.canceled:hover
 {
-    background-color: deeppink;
-    color: white;
+    background-color: #733;
 }
 
 div.task_contents
@@ -112,8 +116,7 @@ div.notes
 
 div.note
 {
-    background-color: white;
-    color: black;
+    background-color: #111;
 }
 
 div.note_contents
@@ -135,9 +138,8 @@ div.files
 
 div.file
 {
-    background-color: white;
+    background-color: #111;
     padding: 15px 20px;
-    color: black;
 }
 
 a.file
@@ -146,9 +148,8 @@ a.file
 
 div.image
 {
-    background-color: white;
+    background-color: #111;
     padding: 10px;
-    color: black;
 }
 
 a.image
@@ -160,4 +161,30 @@ img.image
     box-sizing: border-box;
     vertical-align: top;
     max-width: 100%;
+}
+
+div.note_ai_generated
+{
+    margin: 10px;
+    border: 1px solid transparent;
+    background-color: #333;
+}
+
+div.note_ai_generated > *
+{
+    margin: 15px 20px;
+}
+
+pre
+{
+    background-color: #555;
+    padding: 15px 20px;
+    white-space: pre-wrap;
+}
+
+code
+{
+    font-family: 'IBM Plex Mono', 'IBM Plex Sans JP', monospace;
+    font-size: 1rem;
+    line-height: 1.5;
 }
