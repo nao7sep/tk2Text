@@ -1,11 +1,11 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans+JP&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=M+PLUS+1&family=M+PLUS+1+Code&display=swap');
 
 body
 {
     margin: 0;
     background-color: #111;
     color: #ddd;
-    font-family: 'IBM Plex Sans JP', sans-serif;
+    font-family: 'M PLUS 1', sans-serif;
     font-size: 1rem;
     line-height: 1.5;
     overflow-wrap: break-word;
@@ -184,7 +184,7 @@ pre
 
 code
 {
-    font-family: 'IBM Plex Mono', 'IBM Plex Sans JP', monospace;
+    font-family: 'M PLUS 1 Code', monospace;
     font-size: 1rem;
     line-height: 1.5;
 }
