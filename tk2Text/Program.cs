@@ -25,6 +25,13 @@ namespace tk2Text
                     goto End;
                 }
 
+                string xReplacementsFilePath = nPath.Combine (iShared.AppDirectoryPath, "Replacements.txt");
+
+                if (nFile.Exists (xReplacementsFilePath) == false)
+                    nFile.Create (xReplacementsFilePath);
+
+                iStringReplacer xReplacer = new iStringReplacer (xReplacementsFilePath);
+
                 foreach (string xParagraph in xParagraphs)
                 {
                     iParametersStringParser xParser = new iParametersStringParser (xParagraph);
@@ -50,7 +57,7 @@ namespace tk2Text
 
                     foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists)
                     {
-                        iHtmlPageGenerator xGenerator = new iHtmlPageGenerator (xParser, xMergedTaskList);
+                        iHtmlPageGenerator xGenerator = new iHtmlPageGenerator (xParser, xReplacer, xMergedTaskList);
 
                         if (xGenerator.TryGenerate (out iPageGenerationResult xResult))
                         {

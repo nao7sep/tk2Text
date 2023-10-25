@@ -16,13 +16,16 @@ namespace tk2Text
     {
         public readonly iParametersStringParser Parser;
 
+        public readonly iStringReplacer Replacer;
+
         public readonly iMergedTaskListInfo MergedTaskList;
 
         public IEnumerable <string> ErrorMessages;
 
-        public iHtmlPageGenerator (iParametersStringParser parser, iMergedTaskListInfo mergedTaskList)
+        public iHtmlPageGenerator (iParametersStringParser parser, iStringReplacer replacer, iMergedTaskListInfo mergedTaskList)
         {
             Parser = parser;
+            Replacer = replacer;
             MergedTaskList = mergedTaskList;
             ErrorMessages = new List <string> ();
         }
@@ -388,7 +391,7 @@ namespace tk2Text
 
                     xBuilder.OpenTag ("div", new [] { "class", "note_contents" });
 
-                    xBuilder.Append (iHtmlEncode (note.Contents!, false, xBuilder.IndentationWidth));
+                    xBuilder.Append (iHtmlEncode (Replacer.ReplaceAll (note.Contents!), false, xBuilder.IndentationWidth));
 
                     if (writesGuid)
                         xBuilder.Append ($"{iHtmlStringBuilder.IndentationString.AsSpan (0, xBuilder.IndentationWidth)}<!-- Task: {note.ParentTask!.Guid.ToString ("D")} -->{Environment.NewLine}");
@@ -425,7 +428,7 @@ namespace tk2Text
                         return $"{Environment.NewLine}{iHtmlStringBuilder.IndentationString.AsSpan (0, indentationWidth)}";
                     }
 
-                    xBuilder.AddTag ("div", new [] { "class", "task_contents" }, $"{xFirstPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}<span class=\"task_contents\">{iHtmlEncode (xTask.Contents!, true, null)}</span>{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}{xLastPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth)}");
+                    xBuilder.AddTag ("div", new [] { "class", "task_contents" }, $"{xFirstPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}<span class=\"task_contents\">{iHtmlEncode (Replacer.ReplaceAll (xTask.Contents!), true, null)}</span>{iGetNewLineAndIndentationString (xBuilder.IndentationWidth + 4)}{xLastPart}{iGetNewLineAndIndentationString (xBuilder.IndentationWidth)}");
 
                     iAddAttachedFilesPart (xTask.Guid);
 

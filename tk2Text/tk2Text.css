@@ -42,15 +42,6 @@ div.title
     font-weight: bold;
 }
 
-@media (width < 576px)
-{
-    div.title
-    {
-        padding: 15px 22.5px;
-        font-size: 1.5rem;
-    }
-}
-
 a.title
 {
     color: #ddd;
@@ -173,6 +164,42 @@ div.note_ai_generated
 div.note_ai_generated > *
 {
     margin: 15px 20px;
+}
+
+div.note_ai_generated h1
+{
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+div.note_ai_generated h2
+{
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+div.note_ai_generated h3
+{
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+div.note_ai_generated h4
+{
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+div.note_ai_generated h5
+{
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+div.note_ai_generated h6
+{
+    font-size: 1rem;
+    font-weight: bold;
 }
 
 pre

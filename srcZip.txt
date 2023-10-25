@@ -36,6 +36,7 @@ Compiled/tk2Text/NAudio.WinMM.dll
 Compiled/tk2Text/Nekote2018.pdb
 Compiled/tk2Text/Nekote2018.xml
 Compiled/tk2Text/Parameters.txt
+Compiled/tk2Text/Replacements.txt
 Compiled/tk2Text/System.Data.SQLite.dll
 Compiled/tk2Text/System.Data.SQLite.xml
 Compiled/tk2Text/tk2Text.pdb
