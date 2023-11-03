@@ -55,7 +55,7 @@ namespace tk2Text
                         goto End;
                     }
 
-                    foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists)
+                    foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists.OrderBy (x => x.Attributes.DestFilePath, StringComparer.OrdinalIgnoreCase))
                     {
                         iHtmlPageGenerator xGenerator = new iHtmlPageGenerator (xParser, xReplacer, xMergedTaskList);
 
