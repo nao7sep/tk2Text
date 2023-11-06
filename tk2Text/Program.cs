@@ -47,6 +47,9 @@ namespace tk2Text
                         goto End;
                     }
 
+                    if (xParser.WarningMessages.Any ())
+                        ConsoleAlt.WriteInfoLine (string.Join (Environment.NewLine, xParser.WarningMessages));
+
                     iParametersValidator xValidator = new iParametersValidator (xParser);
 
                     if (xValidator.ErrorMessages.Any ())
@@ -55,8 +58,17 @@ namespace tk2Text
                         goto End;
                     }
 
+                    if (xValidator.WarningMessages.Any ())
+                        ConsoleAlt.WriteInfoLine (string.Join (Environment.NewLine, xValidator.WarningMessages));
+
                     foreach (iMergedTaskListInfo xMergedTaskList in xValidator.MergedTaskLists.OrderBy (x => x.Attributes.DestFilePath, StringComparer.OrdinalIgnoreCase))
                     {
+                        // 属性情報のないエントリーを無視
+                        // チェック方法は、属性情報があるか調べるところと同じ
+
+                        if (string.IsNullOrEmpty (xMergedTaskList.Attributes.SourceDirectoryPath))
+                            continue;
+
                         iHtmlPageGenerator xGenerator = new iHtmlPageGenerator (xParser, xReplacer, xMergedTaskList);
 
                         if (xGenerator.TryGenerate (out iPageGenerationResult xResult))

@@ -15,11 +15,15 @@ namespace tk2Text
 
         public readonly IEnumerable <string> ErrorMessages;
 
+        public readonly IEnumerable <string> WarningMessages;
+
         public iParametersValidator (iParametersStringParser parser)
         {
             Parser = parser;
 
-            List <string> xErrorMessages = new List <string> ();
+            List <string>
+                xErrorMessages = new List <string> (),
+                xWarningMessages = new List <string> ();
 
             var xAllPaths = Parser.IncludedPaths.SelectMany (x =>
             {
@@ -84,7 +88,7 @@ namespace tk2Text
                 var xAttributes = Parser.Attributes.FirstOrDefault (z => y.Contains (z.SourceDirectoryPath, StringComparer.OrdinalIgnoreCase), iAttributesInfo.Empty);
 
                 if (string.IsNullOrEmpty (xAttributes.SourceDirectoryPath))
-                    xErrorMessages.Add ("属性情報がありません: " + string.Join (" | ", y));
+                    xWarningMessages.Add ("属性情報がありません: " + string.Join (" | ", y));
 #if DEBUG
                 else Console.WriteLine ($"Applied Attributes: {string.Join (" | ", y)} | {xAttributes.ToString (includesSourceDirectoryPath: false)}");
 #endif
@@ -95,6 +99,7 @@ namespace tk2Text
             ToArray (); // 遅延実行によるトラブルを回避
 
             ErrorMessages = xErrorMessages;
+            WarningMessages = xWarningMessages;
         }
     }
 }

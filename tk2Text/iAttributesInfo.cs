@@ -47,7 +47,9 @@ namespace tk2Text
 
         public string Title;
 
-        public iAttributesInfo (string sourceDirectoryPath, string categoryName, string destDirectoryPath, string attachedFileDirectoryRelativePath, string destFileName, string title)
+        public bool IsStreaming;
+
+        public iAttributesInfo (string sourceDirectoryPath, string categoryName, string destDirectoryPath, string attachedFileDirectoryRelativePath, string destFileName, string title, bool isStreaming)
         {
             SourceDirectoryPath = sourceDirectoryPath;
             CategoryName = categoryName;
@@ -55,6 +57,7 @@ namespace tk2Text
             AttachedFileDirectoryRelativePath = iShared.ToWindowsDirectorySeparators (attachedFileDirectoryRelativePath);
             DestFileName = destFileName;
             Title = title;
+            IsStreaming = isStreaming;
         }
 
         // readonly をつけないと、IDE0251 のメッセージが表示される
@@ -66,7 +69,7 @@ namespace tk2Text
 
         public readonly string ToString (bool includesSourceDirectoryPath)
         {
-            return $"{(includesSourceDirectoryPath ? $"{SourceDirectoryPath} | " : string.Empty)}{CategoryName} | {DestDirectoryPath} | {AttachedFileDirectoryRelativePath} | {DestFileName} | {Title}";
+            return $"{(includesSourceDirectoryPath ? $"{SourceDirectoryPath} | " : string.Empty)}{CategoryName} | {DestDirectoryPath} | {AttachedFileDirectoryRelativePath} | {DestFileName} | {Title} | IsStreaming:{IsStreaming}";
         }
 
         public static readonly iAttributesInfo Empty = new iAttributesInfo
@@ -76,7 +79,8 @@ namespace tk2Text
             DestDirectoryPath = string.Empty,
             AttachedFileDirectoryRelativePath = string.Empty,
             DestFileName = string.Empty,
-            Title = string.Empty
+            Title = string.Empty,
+            IsStreaming = false
         };
     }
 }

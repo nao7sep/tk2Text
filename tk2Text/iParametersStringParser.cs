@@ -28,6 +28,8 @@ namespace tk2Text
 
         public readonly IEnumerable <string> ErrorMessages;
 
+        public readonly IEnumerable <string> WarningMessages;
+
         public bool IsEmpty
         {
             get
@@ -45,7 +47,8 @@ namespace tk2Text
                 xIncludedPaths = new List <string> (),
                 xExcludedPaths = new List <string> (),
                 xCategoryNames = new List <string> (),
-                xErrorMessages = new List <string> ();
+                xErrorMessages = new List <string> (),
+                xWarningMessages = new List <string> ();
 
             List <iMergedPathsInfo> xMergedPaths = new List <iMergedPathsInfo> ();
 
@@ -80,6 +83,9 @@ namespace tk2Text
 #if DEBUG
                         Console.WriteLine ("Parsed Include: " + xValue);
 #endif
+                        if (Directory.Exists (xValue) == false)
+                            xWarningMessages.Add ("ディレクトリーが存在しません: " + xValue);
+
                         xIncludedPaths.Add (xValue);
                     }
 
@@ -95,6 +101,9 @@ namespace tk2Text
 #if DEBUG
                         Console.WriteLine ("Parsed Exclude: " + xValue);
 #endif
+                        if (Directory.Exists (xValue) == false)
+                            xWarningMessages.Add ("ディレクトリーが存在しません: " + xValue);
+
                         xExcludedPaths.Add (xValue);
                     }
 
@@ -119,6 +128,12 @@ namespace tk2Text
                         // First は速そうなので値をキャッシュしない
                         Console.WriteLine (string.Join (Environment.NewLine, xValues.Skip (1).Select (x => $"Parsed Merge: {xValues.First ()} | {x}")));
 #endif
+                        foreach (string xValue in xValues)
+                        {
+                            if (Directory.Exists (xValue) == false)
+                                xWarningMessages.Add ("ディレクトリーが存在しません: " + xValue);
+                        }
+
                         xMergedPaths.AddRange (xValues.Skip (1).Select (x => new iMergedPathsInfo (xValues.First (), x)));
                     }
 
@@ -156,12 +171,34 @@ namespace tk2Text
 
                     var xValues = xTrimmed.Substring ("Attributes:".Length).Split ('|', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-                    if (xValues.Length == 6 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [2]))
+                    if (xValues.Length >= 6 && Path.IsPathFullyQualified (xValues [0]) && Path.IsPathFullyQualified (xValues [2]))
                     {
+                        if (xValues.Length == 7)
+                        {
+                            if (string.Equals (xValues [6], "Streaming", StringComparison.OrdinalIgnoreCase))
+                            {
 #if DEBUG
-                        Console.WriteLine ($"Parsed Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]} | {xValues [4]} | {xValues [5]}");
+                                Console.WriteLine ($"Parsed Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]} | {xValues [4]} | {xValues [5]} | Streaming:True");
 #endif
-                        xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2], xValues [3], xValues [4], xValues [5]));
+                                if (Directory.Exists (xValues [0]) == false)
+                                    xWarningMessages.Add ("ディレクトリーが存在しません: " + xValues [0]);
+
+                                xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2], xValues [3], xValues [4], xValues [5], isStreaming: true));
+                            }
+
+                            else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);
+                        }
+
+                        else
+                        {
+#if DEBUG
+                            Console.WriteLine ($"Parsed Attributes: {xValues [0]} | {xValues [1]} | {xValues [2]} | {xValues [3]} | {xValues [4]} | {xValues [5]}");
+#endif
+                            if (Directory.Exists (xValues [0]) == false)
+                                xWarningMessages.Add ("ディレクトリーが存在しません: " + xValues [0]);
+
+                            xAttributes.Add (new iAttributesInfo (xValues [0], xValues [1], xValues [2], xValues [3], xValues [4], xValues [5], false));
+                        }
                     }
 
                     else xErrorMessages.Add ("パラメーターが不正です: " + xTrimmed);
@@ -175,6 +212,7 @@ namespace tk2Text
             Attributes = xAttributes;
             ExcludedItems = xExcludedItems;
             ErrorMessages = xErrorMessages;
+            WarningMessages = xWarningMessages;
         }
     }
 }

@@ -168,10 +168,25 @@ namespace tk2Text
             // あとで読もうと添付した PDF ファイルが、タスクの方がまだなのに出力先に全てコピーされるのは、データの不整合にほかならない
 
             List <Guid> xAllHandledParentGuids = new List <Guid> ();
-            var xAllHandledTasks = MergedTaskList.AllButMemoTasks.Where (x => x.State == TaskState.Done || x.State == TaskState.Cancelled);
+            IEnumerable <TaskInfo> xAllHandledTasks;
+
+            // 「ストリーミング」モードなら未処理のタスクもログとして出力される
+            
+            if (MergedTaskList.Attributes.IsStreaming)
+                xAllHandledTasks = MergedTaskList.AllButMemoTasks;
+            
+            else xAllHandledTasks = MergedTaskList.AllButMemoTasks.Where (x => x.State == TaskState.Done || x.State == TaskState.Cancelled);
+
             xAllHandledParentGuids.AddRange (xAllHandledTasks.Select (y => y.Guid));
             xAllHandledParentGuids.AddRange (xAllHandledTasks.SelectMany (x => x.Notes).Select (y => y.Guid));
-            xAllHandledParentGuids.AddRange (MergedTaskList.AllMemoNotes.Where (x => x.ParentTask!.State == TaskState.Done || x.ParentTask!.State == TaskState.Cancelled).Select (y => y.Guid));
+            xAllHandledParentGuids.AddRange (MergedTaskList.AllMemoNotes.Where (x =>
+            {
+                if (MergedTaskList.Attributes.IsStreaming)
+                    return true;
+
+                else return x.ParentTask!.State == TaskState.Done || x.ParentTask!.State == TaskState.Cancelled;
+            }).
+            Select (y => y.Guid));
 
             // タスクリストそのものに添付されているファイルは、ParentGuid が null になる
             // ここでソートするのは、ファイル名が衝突したら連番が入る仕組みにおいて、できるだけパスの同一性が保たれるようにするため
@@ -221,7 +236,7 @@ namespace tk2Text
 #if DEBUG
                                     Console.WriteLine ("Unchanged Attached File: " + xAttachedFileDestPath);
 #endif
-                                    xHandledAttachedFiles.Add (new iAttachedFileManager (xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile));
+                                    xHandledAttachedFiles.Add (new iAttachedFileManager (xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile, MergedTaskList.Attributes.IsStreaming));
                                     break;
                                 }
                             }
@@ -230,9 +245,9 @@ namespace tk2Text
                             xAttachedFile.File.CopyTo (xAttachedFileDestPath, true);
                             nFile.SetLastWriteUtc (xAttachedFileDestPath, xAttachedFile.ModifiedAtUtc);
 
-                            iAttachedFileManager xManager = new iAttachedFileManager (xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile);
+                            iAttachedFileManager xManager = new iAttachedFileManager (xAttachedFileDestRelativePath, xAttachedFileDestPath, xAttachedFile, MergedTaskList.Attributes.IsStreaming);
 
-                            if (xManager.IsImage && xManager.IsOptimized)
+                            if (xManager.IsImage && xManager.IsResized)
                                 xManager.Resize ();
 #if DEBUG
                             if (xFileExisted == false)
@@ -261,7 +276,7 @@ namespace tk2Text
             {
                 string [] xUnhandledAttachedFilePaths = Directory.GetFiles (MergedTaskList.Attributes.AttachedFileDirectoryPath, "*.*", SearchOption.AllDirectories).
                     Where (x => xHandledAttachedFiles.All (y => string.Equals (y.DestFilePath, x, StringComparison.OrdinalIgnoreCase) == false &&
-                        string.Equals (y.OptimizedImageFilePath, x, StringComparison.OrdinalIgnoreCase) == false)). // 原版と縮小版の両方とパスが不一致
+                        string.Equals (y.ResizedImageFilePath, x, StringComparison.OrdinalIgnoreCase) == false)). // 原版と縮小版の両方とパスが不一致
                     OrderBy (z => z, StringComparer.OrdinalIgnoreCase). // 一応、ファイルパスでソート
                     ToArray (); // LINQ が複数回処理されるのを回避
 
@@ -346,20 +361,50 @@ namespace tk2Text
 
                         else
                         {
+                            if (MergedTaskList.Attributes.IsStreaming)
+                                continue;
+
                             xBuilder.OpenTag ("div", new [] { "class", "image" });
 
-                            if (xAttachedFile.IsOptimized == false)
+                            if (xAttachedFile.IsResized == false)
                                 xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!)), "class", "image" });
 
                             else
                             {
                                 xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath)), "target", "_blank", "class", "image" });
-                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.OptimizedImageRelativeFilePath!)), "class", "image" });
+                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.ResizedImageRelativeFilePath!)), "class", "image" });
                                 xBuilder.CloseTag ();
                             }
 
                             xBuilder.CloseTag ();
                         }
+                    }
+
+                    if (MergedTaskList.Attributes.IsStreaming)
+                    {
+                        xBuilder.OpenTag ("div", new [] { "class", "images" });
+
+                        foreach (var xAttachedImage in xAttachedFiles.Where (x => x.IsImage).OrderBy (y => y.File.AttachedAtUtc))
+                        {
+                            // 派生開発での調整も考え、いったん少し上のコードをコピペ
+                            // サムネイルが横にも並ぶのは、CSS により実現
+
+                            xBuilder.OpenTag ("div", new [] { "class", "image" });
+
+                            if (xAttachedImage.IsResized == false)
+                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedImage.DestRelativeFilePath!)), "class", "image" });
+
+                            else
+                            {
+                                xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedImage.DestRelativeFilePath)), "target", "_blank", "class", "image" });
+                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedImage.ResizedImageRelativeFilePath!)), "class", "image" });
+                                xBuilder.CloseTag ();
+                            }
+
+                            xBuilder.CloseTag ();
+                        }
+
+                        xBuilder.CloseTag ();
                     }
 
                     xBuilder.CloseTag ();
@@ -376,11 +421,29 @@ namespace tk2Text
             List <(long Utc, object Entry)> xEntries = new List <(long Utc, object Entry)> ();
 
             xEntries.AddRange (MergedTaskList.AllButMemoTasks.
-                Where (x => x.State == TaskState.Done || x.State == TaskState.Cancelled).
-                Select (y => (y.HandlingUtc!.Value, (object) y)));
+                Where (x =>
+                {
+                    if (MergedTaskList.Attributes.IsStreaming)
+                        return true;
+
+                    else return x.State == TaskState.Done || x.State == TaskState.Cancelled;
+                }).
+                Select (y =>
+                {
+                    if (MergedTaskList.Attributes.IsStreaming)
+                        return (y.CreationUtc, (object) y);
+
+                    else return (y.HandlingUtc!.Value, (object) y);
+                }));
 
             xEntries.AddRange (MergedTaskList.AllMemoNotes.
-                Where (x => x.ParentTask!.State == TaskState.Done || x.ParentTask!.State == TaskState.Cancelled).
+                Where (x =>
+                {
+                    if (MergedTaskList.Attributes.IsStreaming)
+                        return true;
+
+                    else return x.ParentTask!.State == TaskState.Done || x.ParentTask!.State == TaskState.Cancelled;
+                }).
                 Select (y => (y.CreationUtc, (object) y)));
 
             foreach (object xEntry in xEntries.OrderBy (x => x.Utc).Select (y => y.Entry))
@@ -408,9 +471,33 @@ namespace tk2Text
                     TaskInfo xTask = (TaskInfo) xEntry;
                     string xGuidString = xTask.Guid.ToString ("D");
 
-                    xBuilder.OpenTag ("div", new [] { "id", xGuidString, "class", $"task {(xTask.State == TaskState.Done ? "done" : "canceled")}" });
+                    string xClass,
+                        xSymbol;
 
-                    string xFirstPart = xTask.State == TaskState.Done ? "&check;" : "&cross;",
+                    if (MergedTaskList.Attributes.IsStreaming)
+                    {
+                        xClass = "task streaming";
+                        xSymbol = string.Empty;
+                    }
+
+                    else
+                    {
+                        if (xTask.State == TaskState.Done)
+                        {
+                            xClass = "task done";
+                            xSymbol = "&check;";
+                        }
+
+                        else
+                        {
+                            xClass = "task canceled";
+                            xSymbol = "&cross;";
+                        }
+                    }
+
+                    xBuilder.OpenTag ("div", new [] { "id", xGuidString, "class", xClass });
+
+                    string xFirstPart = xSymbol,
                         xLastPart = $"<a href=\"#{xGuidString}\" class=\"permalink\">&infin;</a>";
 
                     // 今のところ <b> で足りるが、HTML 文書構造の各部には装飾でなく「意味」をつけていきたい

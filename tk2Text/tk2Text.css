@@ -36,7 +36,7 @@ div.entries > div.note
 
 div.title
 {
-    background-color: #333;
+    background-color: #538;
     padding: 20px 30px;
     font-size: 2rem;
     font-weight: bold;
@@ -59,6 +59,16 @@ div.entries
 
 div.task
 {
+}
+
+div.streaming
+{
+    background-color: #131;
+}
+
+div.streaming:hover
+{
+    background-color: #353;
 }
 
 div.done
@@ -129,6 +139,7 @@ div.files
 
 div.file
 {
+    border: 1px solid #333;
     background-color: #111;
     padding: 15px 20px;
 }
@@ -139,6 +150,7 @@ a.file
 
 div.image
 {
+    border: 1px solid #333;
     background-color: #111;
     padding: 10px;
 }
@@ -152,6 +164,25 @@ img.image
     box-sizing: border-box;
     vertical-align: top;
     max-width: 100%;
+}
+
+div.images
+{
+    margin: 10px;
+    border: 1px solid #333;
+    background-color: #111;
+    padding: 10px;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+div.images > div.image
+{
+    margin: 0;
+    border-style: none;
+    padding: 0;
 }
 
 div.note_ai_generated

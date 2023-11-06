@@ -16,13 +16,15 @@ namespace tk2Text
 
         public readonly iAttachedFileInfo File;
 
+        public readonly bool IsStreaming;
+
         public readonly bool IsImage;
 
-        public readonly bool IsOptimized;
+        public readonly bool IsResized;
 
-        public readonly string? OptimizedImageRelativeFilePath;
+        public readonly string? ResizedImageRelativeFilePath;
 
-        public readonly string? OptimizedImageFilePath;
+        public readonly string? ResizedImageFilePath;
 
         // 拡張子に関わらず一度開いてみるとか、それで画像なら必要に応じて拡張子を修正するとかも可能だが、
         //     それをするなら受け子の taskKiller の方であり、こちらでやると実装が複雑になる
@@ -31,30 +33,35 @@ namespace tk2Text
 
         public static readonly IEnumerable <string> ImageFileExtensionsToOptimize = new [] { ".bmp", ".jpeg", ".jpg", ".tif", ".tiff" };
 
-        public iAttachedFileManager (string destRelativeFilePath, string destFilePath, iAttachedFileInfo file)
+        public iAttachedFileManager (string destRelativeFilePath, string destFilePath, iAttachedFileInfo file, bool isStreaming)
         {
             DestRelativeFilePath = destRelativeFilePath;
             DestFilePath = destFilePath;
             File = file;
+            IsStreaming = isStreaming;
 
             // 画像としての正当性を評価せずにパスを確定する甘い実装
             // taskKiller にファイルを添付するのも自分なので、これで様子見
 
             IsImage = ImageFileExtensions.Contains (file.File.Extension, StringComparer.OrdinalIgnoreCase);
-            IsOptimized = ImageFileExtensionsToOptimize.Contains (file.File.Extension, StringComparer.OrdinalIgnoreCase);
+            IsResized = ImageFileExtensionsToOptimize.Contains (file.File.Extension, StringComparer.OrdinalIgnoreCase);
 
-            if (IsOptimized)
+            if (IsResized)
             {
-                static string iGetOptimizedImagePath (string path)
+                string iGetOptimizedImagePath (string path)
                 {
                     // Attached/Optimized/Hoge.jpg なども考えたが、ファイル名の一意性を保つことを優先した
                     // -Optimized 方式では元々 -Optimized が入っているファイルとの衝突のリスクがあるが、
                     //     A.jpg として入れたものが A.jpg として下りてきて内容が変わっていて既存の A.jpg と一致しない不都合の方が大きい
-                    return nPath.Combine (nPath.GetDirectoryPath (path), nPath.GetNameWithoutExtension (path) + "-Optimized" + nPath.GetExtension (path));
+
+                    // 追記: 「ストリーミング」モードなら -Thumb になる
+                    // 省略しない選択肢もあるが、やはりうるさい
+
+                    return nPath.Combine (nPath.GetDirectoryPath (path), nPath.GetNameWithoutExtension (path) + (IsStreaming ? "-Thumb" : "-Optimized") + nPath.GetExtension (path));
                 }
 
-                OptimizedImageRelativeFilePath = iGetOptimizedImagePath (DestRelativeFilePath);
-                OptimizedImageFilePath = iGetOptimizedImagePath (DestFilePath);
+                ResizedImageRelativeFilePath = iGetOptimizedImagePath (DestRelativeFilePath);
+                ResizedImageFilePath = iGetOptimizedImagePath (DestFilePath);
             }
         }
 
@@ -73,9 +80,14 @@ namespace tk2Text
                 xImage.Format = MagickFormat.Jpeg;
                 xImage.Quality = 75;
                 xImage.AutoOrient ();
-                xImage.Resize (1280, 1280);
+
+                if (IsStreaming)
+                    xImage.Resize (320, 320);
+
+                else xImage.Resize (1280, 1280);
+
                 xImage.Strip ();
-                xImage.Write (OptimizedImageFilePath!); // 上書きモード
+                xImage.Write (ResizedImageFilePath!); // 上書きモード
             }
         }
     }
