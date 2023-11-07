@@ -133,7 +133,7 @@ a.url
 {
 }
 
-div.files
+div.attached
 {
 }
 
@@ -183,6 +183,20 @@ div.images > div.image
     margin: 0;
     border-style: none;
     padding: 0;
+}
+
+ul.files
+{
+    margin: 10px;
+    border: 1px solid #333;
+    background-color: #111;
+    padding-top: 15px;
+    padding-inline: 40px 15px; /* 左は Chrome の初期値 */
+    padding-bottom: 15px;
+}
+
+li.file
+{
 }
 
 div.note_ai_generated

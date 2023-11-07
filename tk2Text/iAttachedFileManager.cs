@@ -44,7 +44,7 @@ namespace tk2Text
             // taskKiller にファイルを添付するのも自分なので、これで様子見
 
             IsImage = ImageFileExtensions.Contains (file.File.Extension, StringComparer.OrdinalIgnoreCase);
-            IsResized = ImageFileExtensionsToOptimize.Contains (file.File.Extension, StringComparer.OrdinalIgnoreCase);
+            IsResized = IsStreaming || ImageFileExtensionsToOptimize.Contains (file.File.Extension, StringComparer.OrdinalIgnoreCase); // 「ストリーミング」モードなら必ず縮小化
 
             if (IsResized)
             {

@@ -348,63 +348,67 @@ namespace tk2Text
 
                 if (xAttachedFiles.Length > 0)
                 {
-                    xBuilder.OpenTag ("div", new [] { "class", "files" });
+                    xBuilder.OpenTag ("div", new [] { "class", "attached" });
 
-                    foreach (var xAttachedFile in xAttachedFiles.OrderBy (x => x.File.AttachedAtUtc))
+                    void iAddAttachedImagePart (iAttachedFileManager file)
                     {
-                        if (xAttachedFile.IsImage == false)
-                        {
-                            xBuilder.OpenTag ("div", new [] { "class", "file" });
-                            xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (iShared.ToUnixDirectorySeparators (xAttachedFile.DestRelativeFilePath!)), "target", "_blank", "class", "file" }, WebUtility.HtmlEncode (xAttachedFile.File.File.Name));
-                            xBuilder.CloseTag ();
-                        }
+                        xBuilder.OpenTag ("div", new [] { "class", "image" });
+
+                        if (file.IsResized == false)
+                            xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (file.DestRelativeFilePath!)), "class", "image" });
 
                         else
                         {
-                            if (MergedTaskList.Attributes.IsStreaming)
-                                continue;
-
-                            xBuilder.OpenTag ("div", new [] { "class", "image" });
-
-                            if (xAttachedFile.IsResized == false)
-                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath!)), "class", "image" });
-
-                            else
-                            {
-                                xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.DestRelativeFilePath)), "target", "_blank", "class", "image" });
-                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedFile.ResizedImageRelativeFilePath!)), "class", "image" });
-                                xBuilder.CloseTag ();
-                            }
-
-                            xBuilder.CloseTag ();
-                        }
-                    }
-
-                    if (MergedTaskList.Attributes.IsStreaming)
-                    {
-                        xBuilder.OpenTag ("div", new [] { "class", "images" });
-
-                        foreach (var xAttachedImage in xAttachedFiles.Where (x => x.IsImage).OrderBy (y => y.File.AttachedAtUtc))
-                        {
-                            // 派生開発での調整も考え、いったん少し上のコードをコピペ
-                            // サムネイルが横にも並ぶのは、CSS により実現
-
-                            xBuilder.OpenTag ("div", new [] { "class", "image" });
-
-                            if (xAttachedImage.IsResized == false)
-                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedImage.DestRelativeFilePath!)), "class", "image" });
-
-                            else
-                            {
-                                xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedImage.DestRelativeFilePath)), "target", "_blank", "class", "image" });
-                                xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (xAttachedImage.ResizedImageRelativeFilePath!)), "class", "image" });
-                                xBuilder.CloseTag ();
-                            }
-
+                            xBuilder.OpenTag ("a", new [] { "href", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (file.DestRelativeFilePath)), "target", "_blank", "class", "image" });
+                            xBuilder.AddTag ("img", new [] { "src", iShared.ToUnixDirectorySeparators (WebUtility.HtmlEncode (file.ResizedImageRelativeFilePath!)), "class", "image" });
                             xBuilder.CloseTag ();
                         }
 
                         xBuilder.CloseTag ();
+                    }
+
+                    void iAddAttachedFilePart (iAttachedFileManager file, bool isStreaming)
+                    {
+                        xBuilder.OpenTag (isStreaming ? "li" : "div", new [] { "class", "file" });
+                        xBuilder.AddTag ("a", new [] { "href", WebUtility.HtmlEncode (iShared.ToUnixDirectorySeparators (file.DestRelativeFilePath!)), "target", "_blank", "class", "file" }, WebUtility.HtmlEncode (file.File.File.Name));
+                        xBuilder.CloseTag ();
+                    }
+
+                    if (MergedTaskList.Attributes.IsStreaming == false)
+                    {
+                        foreach (var xAttachedFile in xAttachedFiles.OrderBy (x => x.File.AttachedAtUtc))
+                        {
+                            if (xAttachedFile.IsImage)
+                                iAddAttachedImagePart (xAttachedFile);
+
+                            else iAddAttachedFilePart (xAttachedFile, isStreaming: false);
+                        }
+                    }
+
+                    else
+                    {
+                        var xAttachedImages = xAttachedFiles.Where (x => x.IsImage).OrderBy (y => y.File.AttachedAtUtc);
+                        var xAttachedFilesAlt = xAttachedFiles.Where (x => x.IsImage == false).OrderBy (y => y.File.AttachedAtUtc);
+
+                        if (xAttachedImages.Any ())
+                        {
+                            xBuilder.OpenTag ("div", new [] { "class", "images" });
+
+                            foreach (var xAttachedImage in xAttachedImages)
+                                iAddAttachedImagePart (xAttachedImage);
+
+                            xBuilder.CloseTag ();
+                        }
+
+                        if (xAttachedFilesAlt.Any ())
+                        {
+                            xBuilder.OpenTag ("ul", new [] { "class", "files" });
+
+                            foreach (var xAttachedFile in xAttachedFilesAlt)
+                                iAddAttachedFilePart (xAttachedFile, isStreaming: true);
+
+                            xBuilder.CloseTag ();
+                        }
                     }
 
                     xBuilder.CloseTag ();
