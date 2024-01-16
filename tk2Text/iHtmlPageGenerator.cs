@@ -103,7 +103,9 @@ namespace tk2Text
                 {
                     int xEndOfAiGeneratedPart = -1;
 
-                    for (int tempAlt = temp + 1; tempAlt < xParagraphs.Length; tempAlt ++)
+                    // temp + 1 から見ていたが、1段落だけの回答もある
+
+                    for (int tempAlt = temp; tempAlt < xParagraphs.Length; tempAlt ++)
                     {
                         if (xParagraphs [tempAlt].EndsWith ("@"))
                         {
