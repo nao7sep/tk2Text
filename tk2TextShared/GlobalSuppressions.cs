@@ -11,3 +11,9 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage ("Style", "IDE0046")]
 [assembly: SuppressMessage ("Style", "IDE0057")]
 [assembly: SuppressMessage ("Style", "IDE0090")]
+
+// .NET 8 related.
+// This project is deprecated.
+[assembly: SuppressMessage ("Performance", "CA1854")]
+[assembly: SuppressMessage ("Style", "IDE0028")]
+[assembly: SuppressMessage ("Style", "IDE0290")]

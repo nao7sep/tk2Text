@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ApplicationIcon>Microsoft-Fluentui-Emoji-3d-Face-With-Spiral-Eyes-3d.ico</ApplicationIcon>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -17,7 +17,7 @@
 
         <Configuration></Configuration>
 
-        <Version>0.20</Version>
+        <Version>0.21</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
@@ -36,7 +36,7 @@
     <ItemGroup>
       <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.5.0" />
       <PackageReference Include="Markdig" Version="0.34.0" />
-      <PackageReference Include="NUglify" Version="1.21.2" />
+      <PackageReference Include="NUglify" Version="1.21.4" />
       <PackageReference Include="System.Formats.Asn1" Version="8.0.0" />
     </ItemGroup>
 

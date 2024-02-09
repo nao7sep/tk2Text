@@ -2,8 +2,8 @@
 Apps
 
 [Copy]
-tk2Text/bin/Release/net6.0 > Apps/tk2Text
-tkView/bin/Release/net6.0-windows > Apps/tkView
+tk2Text/bin/Release/net8.0 > Apps/tk2Text
+tkView/bin/Release/net8.0-windows > Apps/tkView
 
 [Delete]
 Apps/tk2Text/runtimes/linux-arm64/

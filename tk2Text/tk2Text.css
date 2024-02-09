@@ -257,6 +257,10 @@ pre
 code
 {
     font-family: 'M PLUS 1 Code', monospace;
+
+    /* These values should and must be implicitly inherited from the parent element.
+        If we manually set them, code elements wont be looking pretty in heading elements.
+
     font-size: 1rem;
-    line-height: 1.5;
+    line-height: 1.5; */
 }

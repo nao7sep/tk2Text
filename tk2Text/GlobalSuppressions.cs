@@ -18,3 +18,13 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage ("Style", "IDE0078")]
 [assembly: SuppressMessage ("Style", "IDE0090")]
 [assembly: SuppressMessage ("Style", "IDE1006")]
+
+// .NET 8 related.
+// This project is deprecated.
+[assembly: SuppressMessage ("Performance", "CA1861")]
+[assembly: SuppressMessage ("Performance", "CA1864")]
+[assembly: SuppressMessage ("Performance", "CA1866")]
+[assembly: SuppressMessage ("Performance", "SYSLIB1045")]
+[assembly: SuppressMessage ("Style", "IDE0028")]
+[assembly: SuppressMessage ("Style", "IDE0290")]
+[assembly: SuppressMessage ("Style", "IDE0305")]
