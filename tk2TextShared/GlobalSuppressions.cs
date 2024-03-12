@@ -14,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 
 // .NET 8 related.
 // This project is deprecated.
+[assembly: SuppressMessage ("Interoperability", "CA1416")]
 [assembly: SuppressMessage ("Performance", "CA1854")]
 [assembly: SuppressMessage ("Style", "IDE0028")]
 [assembly: SuppressMessage ("Style", "IDE0290")]

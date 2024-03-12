@@ -17,7 +17,7 @@
 
         <Configuration></Configuration>
 
-        <Version>0.21</Version>
+        <Version>0.22</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
@@ -34,8 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.5.0" />
-      <PackageReference Include="Markdig" Version="0.34.0" />
+      <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.6.0" />
+      <PackageReference Include="Markdig" Version="0.35.0" />
       <PackageReference Include="NUglify" Version="1.21.4" />
       <PackageReference Include="System.Formats.Asn1" Version="8.0.0" />
     </ItemGroup>
@@ -46,7 +46,7 @@
 
     <ItemGroup>
       <Reference Include="Nekote2018">
-        <HintPath>..\..\Nekote2018\Nekote2018\bin\Release\Nekote2018.dll</HintPath>
+        <HintPath>..\..\Nekote2018\Nekote2018\bin\Release\net8.0-windows\Nekote2018.dll</HintPath>
       </Reference>
     </ItemGroup>
 

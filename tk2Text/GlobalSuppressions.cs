@@ -21,10 +21,13 @@ using System.Diagnostics.CodeAnalysis;
 
 // .NET 8 related.
 // This project is deprecated.
+[assembly: SuppressMessage ("Interoperability", "CA1416")]
 [assembly: SuppressMessage ("Performance", "CA1861")]
 [assembly: SuppressMessage ("Performance", "CA1864")]
 [assembly: SuppressMessage ("Performance", "CA1866")]
 [assembly: SuppressMessage ("Performance", "SYSLIB1045")]
 [assembly: SuppressMessage ("Style", "IDE0028")]
 [assembly: SuppressMessage ("Style", "IDE0290")]
+[assembly: SuppressMessage ("Style", "IDE0300")]
+[assembly: SuppressMessage ("Style", "IDE0301")]
 [assembly: SuppressMessage ("Style", "IDE0305")]

@@ -15,7 +15,7 @@
 
         <Configuration></Configuration>
 
-        <Version>0.21</Version>
+        <Version>0.22</Version>
         <AssemblyVersion></AssemblyVersion>
         <FileVersion></FileVersion>
         <InformationalVersion></InformationalVersion>
@@ -27,7 +27,7 @@
 
     <ItemGroup>
       <Reference Include="Nekote2018">
-        <HintPath>..\..\Nekote2018\Nekote2018\bin\Release\Nekote2018.dll</HintPath>
+        <HintPath>..\..\Nekote2018\Nekote2018\bin\Release\net8.0-windows\Nekote2018.dll</HintPath>
       </Reference>
     </ItemGroup>
 
