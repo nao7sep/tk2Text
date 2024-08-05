@@ -128,9 +128,14 @@ namespace tk2Text
             return string.Concat (xParts.Select (x =>
             {
                 if (x.IsAiGenerated)
+                {
+                    if (iShared.ExcludesAiMessages)
+                        return string.Empty;
+
                     return xIndentationString + "<div class=\"note_ai_generated\">" + Environment.NewLine +
                         Markdown.ToHtml (x.Value).TrimEnd () + Environment.NewLine +
                         xIndentationString + "</div>" + Environment.NewLine;
+                }
 
                 else return xIndentationString + "<p class=\"note_contents\">" +
                     string.Join ($"<br />{Environment.NewLine}{xWiderIndentationString}",
@@ -173,10 +178,10 @@ namespace tk2Text
             IEnumerable <TaskInfo> xAllHandledTasks;
 
             // 「ストリーミング」モードなら未処理のタスクもログとして出力される
-            
+
             if (MergedTaskList.Attributes.IsStreaming)
                 xAllHandledTasks = MergedTaskList.AllButMemoTasks;
-            
+
             else xAllHandledTasks = MergedTaskList.AllButMemoTasks.Where (x => x.State == TaskState.Done || x.State == TaskState.Cancelled);
 
             xAllHandledParentGuids.AddRange (xAllHandledTasks.Select (y => y.Guid));

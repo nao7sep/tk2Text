@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -77,5 +78,17 @@ namespace tk2Text
                 return mMinifiedCssString;
             }
         }
+
+        private readonly static Lazy <bool> _excludesAiMessages = new (() =>
+        {
+            string? xValueString = ConfigurationManager.AppSettings ["ExcludesAiMessages"];
+
+            if (string.IsNullOrEmpty (xValueString) == false && bool.TryParse (xValueString, out bool xValue))
+                return xValue;
+
+            return false;
+        });
+
+        public static bool ExcludesAiMessages => _excludesAiMessages.Value;
     }
 }
