@@ -31,17 +31,33 @@ namespace tk2Text
                 // しかし、結果として一つも処理対象がないなら、あとでエラーメッセージが出力される
                 // 一つ以上のタスクリストが含まれるディレクトリーだけでなく、タスクリストのディレクトリーそのものの指定も想定
 
-                if (nDirectory.Exists (x))
+                if (nDirectory.Exists (x) && Parser.ExcludedPaths.Contains (x, StringComparer.OrdinalIgnoreCase) == false)
                 {
                     List <string> xPaths = new List <string> ();
 
-                    // アーカイブしたタスクリストを一時的に展開したのであっても検出できるよう、taskKiller.exe でなく Tasks を見る
+                    // /A の指定において /A/B/C がタスクリストだとして、
+                    // /A/B でも exclude できるように、全階層の GetDirectories を使わない
 
-                    if (nDirectory.Exists (nPath.Combine (x, "Tasks")))
-                        xPaths.Add (x);
+                    void _scanDirectory (string path)
+                    {
+                        if (nDirectory.Exists (path) == false)
+                            return;
 
-                    xPaths.AddRange (Directory.GetDirectories (x, "*", SearchOption.AllDirectories).
-                        Where (y => nDirectory.Exists (nPath.Combine (y, "Tasks"))));
+                        if (Parser.ExcludedPaths.Contains (path, StringComparer.OrdinalIgnoreCase))
+                            return;
+
+                        foreach (string xSubdirectoryPath in Directory.GetDirectories (path, "*", SearchOption.TopDirectoryOnly))
+                        {
+                            // アーカイブしたタスクリストを一時的に展開したのであっても検出できるよう、taskKiller.exe でなく Tasks を見る
+                            if (nDirectory.Exists (nPath.Combine (xSubdirectoryPath, "Tasks")))
+                                xPaths.Add (xSubdirectoryPath);
+
+                            // 入れ子のタスクリストを想定しない
+                            else _scanDirectory (xSubdirectoryPath);
+                        }
+                    }
+
+                    _scanDirectory (x);
 
                     return xPaths;
                 }
